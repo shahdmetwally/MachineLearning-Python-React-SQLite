@@ -19,12 +19,17 @@ def predict(image_path):
 
     # Make predictions
     predictions = loaded_model.predict(img_array)
+    #print(predictions)
+
+    # Get the predicted class
+    predicted_class = np.argmax(predictions)
+    print(predicted_class)
 
     # Get the result
-    result = predictions.flatten()[0]
-
-    print(result)
-    return result
+    #result = predictions.flatten()[0]
+    # print(result)
+    
+    return predicted_class
 
 # Example usage:
 image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
