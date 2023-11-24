@@ -1,12 +1,17 @@
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.inception_v3 import preprocess_input
+import io
 import numpy as np
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from keras.preprocessing.image import load_img, img_to_array
+from keras.models import load_model
+from keras.utils import to_categorical
+import sqlite3
+import pickle
+import os
 from mtcnn.mtcnn import MTCNN
 import cv2
-import numpy as np
 from contextlib import redirect_stdout
 import io
+from . import model_v1
 
 def preprocess_image(image_path):
     detector = MTCNN()
@@ -74,6 +79,72 @@ def predict(image_path):
     # print(result)
 
     return predicted_class
+
+def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
+    # Load the existing model
+    model = load_model('SQLite/trained_model.h5')
+
+    # Load and split the new dataset
+    X_new, y_new, names = model_v1.load_and_split_dataset(datafile_path)
+    X_new = np.array(X_new)
+    y_new = np.array(y_new)
+
+    # Preprocess the labels
+    y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
+
+    print(X_new.shape)
+    print(y_new_categorical.shape)
+
+    # Retrain the model on the new dataset
+    model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
+
+    # Save the updated model
+    model.save('updated_model.h5')
+
+    return model
+
+conn = sqlite3.connect('new_dataset.db')
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS faces (
+        id INTEGER PRIMARY KEY,
+        target INTEGER,
+        name INTEGER NOT NULL,
+        image BLOB NOT NULL
+       )
+   ''')
+cursor.execute('DELETE FROM faces')
+# Assuming you have a directory with images
+image_directory = 'SQLite/example_images'
+
+# Get all files in the directory
+image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
+
+# Iterate over image files
+for image_file in image_files:
+    image_path = os.path.join(image_directory, image_file)
+    
+    # Load and preprocess the image
+    img = load_img(image_path, target_size=(62, 47))
+    img_array = img_to_array(img)
+
+    # Convert the image data to bytes
+    image_data = pickle.dumps(img_array)
+
+    # Split the filename to extract target and label
+    target_label, _ = os.path.splitext(image_file)
+    target, label = map(int, target_label.split('_'))
+
+    # Execute the INSERT statement
+    cursor.execute("INSERT INTO faces (target, name, image) VALUES (?, ?, ?)", (target, label, image_data))
+
+    
+
+# Commit the changes and close the connection
+conn.commit()
+conn.close()
+# Example usage
+retrain('new_dataset.db')
 
 
 # Example usage:
