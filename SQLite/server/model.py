@@ -90,6 +90,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
+    
 
     print(X_new.shape)
     print(y_new_categorical.shape)
@@ -101,17 +102,17 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     model.save('updated_model.h5')
 
     return model
-
+''''
 conn = sqlite3.connect('new_dataset.db')
 cursor = conn.cursor()
-cursor.execute('''
+cursor.execute(
     CREATE TABLE IF NOT EXISTS faces (
         id INTEGER PRIMARY KEY,
         target INTEGER,
         name INTEGER NOT NULL,
         image BLOB NOT NULL
        )
-   ''')
+   )
 cursor.execute('DELETE FROM faces')
 # Assuming you have a directory with images
 image_directory = 'SQLite/example_images'
@@ -149,3 +150,4 @@ retrain('new_dataset.db')
 # Example usage:
 image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
 prediction_result = predict(image_path)
+'''
