@@ -10,8 +10,7 @@ import os
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-import io
-from . import model_v1
+from SQLite import model_v1
 
 def preprocess_image(image_path):
     detector = MTCNN()
@@ -56,7 +55,7 @@ def preprocess_image(image_path):
 def predict(image_path):
     # Load the image and resize it to match the model's expected input shape
     img = preprocess_image(image_path)
-    img_array = image.img_to_array(img)
+    img_array = img_to_array(img)
     # Add an extra dimension for the batch
     img_array = np.expand_dims(img_array, axis=0)
 
@@ -64,7 +63,7 @@ def predict(image_path):
     img_array = preprocess_input(img_array)
 
     # Load the trained model
-    loaded_model = tf.keras.models.load_model('SQLite/trained_model.h5')
+    loaded_model = load_model('SQLite/trained_model.h5')
 
     # Make predictions
     predictions = loaded_model.predict(img_array)
@@ -85,7 +84,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     model = load_model('SQLite/trained_model.h5')
 
     # Load and split the new dataset
-    X_new, y_new, names = model_v1.load_and_split_dataset(datafile_path)
+    X_new, y_new, names = model_v1.load_dataset(datafile_path)
     X_new = np.array(X_new)
     y_new = np.array(y_new)
 
