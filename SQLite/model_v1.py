@@ -107,6 +107,7 @@ def train_cnn_model(input_shape, num_classes):
 def get_accuracy(model):
     score = model.evaluate(X_test, y_test, verbose=0)
     print('Test accuracy:', score[1])
+    return score
 
 
 # In[6]:

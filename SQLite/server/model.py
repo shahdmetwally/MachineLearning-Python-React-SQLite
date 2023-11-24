@@ -12,12 +12,12 @@ import cv2
 from contextlib import redirect_stdout
 from SQLite import model_v1
 
-def preprocess_image(image_path):
+def preprocess_image(image):
     detector = MTCNN()
 
     with redirect_stdout(io.StringIO()):
         #image = img * 255
-        image = cv2.imread(image_path)
+        #image = cv2.imread(image_path)
         imageRGB = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
         result = detector.detect_faces(imageRGB)
 
@@ -52,9 +52,9 @@ def preprocess_image(image_path):
     return processed_image
 
 
-def predict(image_path):
+def predict(image):
     # Load the image and resize it to match the model's expected input shape
-    img = preprocess_image(image_path)
+    img = preprocess_image(image)
     img_array = img_to_array(img)
     # Add an extra dimension for the batch
     img_array = np.expand_dims(img_array, axis=0)
@@ -98,8 +98,8 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     # Retrain the model on the new dataset
     model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
-    # Save the updated model
-    model.save('updated_model.h5')
+    # Save the retrained model
+    model.save('retrained_model.h5')
 
     return model
 ''''
@@ -149,5 +149,6 @@ retrain('new_dataset.db')
 
 # Example usage:
 image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
-prediction_result = predict(image_path)
+image = cv2.imread(image_path)
+prediction_result = predict(image)
 '''

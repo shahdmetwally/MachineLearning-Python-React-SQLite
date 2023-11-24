@@ -1,44 +1,39 @@
 from fastapi import APIRouter, HTTPException, UploadFile
 from pydantic import BaseModel
-from PIL import Image
 import model
 
-__all__ = [
-    'get_router'
-]
+__all__ = ['get_router']
 
 router = APIRouter(
     prefix='/user'
 )
 
+predictions_list = []
+
 class PredictionData(BaseModel):
-    image: UploadFile
+    image: bytes
 
 class PredictionResponse(BaseModel):
     score: float
 
-def save_uploaded_file(file: UploadFile):
-    with open('/Users/shahd.metwally/monorepo/Model/Arturo_Gatti_0002.jpg', 'wb') as f:
-        f.write(file.file.read())
-
-@router.post('/upload')
-def upload(file: UploadFile):
-    if not file.filename.endswith('.jpg'):
-        raise HTTPException(status_code=400, detail="Supported file types: ['{}']".format('jpg'))
-    
-    save_uploaded_file(file)
-    return {'filename': file.filename}
-
+# user should be able to upload an image which should initate a predicition 
 @router.post('/predict', response_model=PredictionResponse)
 def predict(data: PredictionData):
-    save_uploaded_file(data.image)
+    if not data.filename.endswith('.jpg'):
+        raise HTTPException(status_code=400, detail="Supported file types: ['{}']".format('jpg'))
+    
+    image = data.image
 
-    # Use the predict function from your model
-    prediction_result = model.predict('/Users/shahd.metwally/monorepo/Model/Arturo_Gatti_0002.jpg')
+    prediction_result = model.predict(image)
 
-    # Return the prediction result
+    predictions_list.append({'score': prediction_result})
+
     return {'score': prediction_result}
 
+# user should be able to view the history of all previously predicitions
+@router.get('/predictions', response_model=PredictionResponse)
+def get_predictions():
+    return predictions_list
 
 def get_router():
     return router
