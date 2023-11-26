@@ -1,44 +1,48 @@
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
-from PIL import Image
-import model
+import SQLite.server.model as model
+from fastapi.responses import JSONResponse
+from pathlib import Path
+import os
+import logging
 
-__all__ = [
-    'get_router'
-]
+app = FastAPI()
 
-router = APIRouter(
-    prefix='/user'
-)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('user')
+
+predictions_list = []
 
 class PredictionData(BaseModel):
     image: UploadFile
 
-class PredictionResponse(BaseModel):
-    score: float
+# user should be able to upload an image which should initiate a prediction 
+@app.post('/predict')
+def predict(image: UploadFile = File(...)):
+    try:
+       # Ensure that the uploaded file is an image
+        if not image.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
 
-def save_uploaded_file(file: UploadFile):
-    with open('/Users/shahd.metwally/monorepo/Model/Arturo_Gatti_0002.jpg', 'wb') as f:
-        f.write(file.file.read())
+        # Save the uploaded image to a temporary file
+        temp_image_path = Path(f"temp_{image.filename}")
+        with open(temp_image_path, "wb") as temp_file:
+            temp_file.write(image.file.read())
+            #temp_file.close()
+        prediction_result = model.predict(temp_image_path)
+        #prediction_result_serializable = jsonable_encoder(prediction_result)
+        # Removing the temporary file
+        os.remove(temp_image_path)
 
-@router.post('/upload')
-def upload(file: UploadFile):
-    if not file.filename.endswith('.jpg'):
-        raise HTTPException(status_code=400, detail="Supported file types: ['{}']".format('jpg'))
-    
-    save_uploaded_file(file)
-    return {'filename': file.filename}
+        # Assuming predictions_list is a global list or stored elsewhere
+        predictions_list.append({'score': prediction_result})
 
-@router.post('/predict', response_model=PredictionResponse)
-def predict(data: PredictionData):
-    save_uploaded_file(data.image)
+        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
+    except Exception as e:
+        # Return other exception details in the response
+        return JSONResponse(content={"error": str(e)})
 
-    # Use the predict function from your model
-    prediction_result = model.predict('/Users/shahd.metwally/monorepo/Model/Arturo_Gatti_0002.jpg')
-
-    # Return the prediction result
-    return {'score': prediction_result}
-
-
-def get_router():
-    return router
+# user should be able to view the history of all previously predicitions
+@app.get('/predictions')
+def get_predictions():
+    return predictions_list

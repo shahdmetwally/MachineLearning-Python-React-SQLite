@@ -11,13 +11,14 @@ from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
 from SQLite import model_v1
+from PIL import Image
 
-def preprocess_image(image_path):
+def preprocess_image(image):
     detector = MTCNN()
 
     with redirect_stdout(io.StringIO()):
         #image = img * 255
-        image = cv2.imread(image_path)
+        #image = cv2.imread(image_path)
         imageRGB = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
         result = detector.detect_faces(imageRGB)
 
@@ -52,36 +53,37 @@ def preprocess_image(image_path):
     return processed_image
 
 
-def predict(image_path):
-    # Load the image and resize it to match the model's expected input shape
-    img = preprocess_image(image_path)
-    img_array = img_to_array(img)
-    # Add an extra dimension for the batch
-    img_array = np.expand_dims(img_array, axis=0)
+def predict(image_data):
+    try:
+        # Load the image and resize it to match the model's expected input shape
+        img = Image.open(image_data)
+        img_array = img_to_array(img)
+        processed_img = preprocess_image(img_array)
+        #print(type(processed_img))
+        img_array = img_to_array(processed_img)
+        #img_array = cv2.resize(img_array, (47, 62))
+        # Add an extra dimension for the batch
+        img_array = np.expand_dims(img_array, axis=0)
 
-    # Preprocess the image for the model
-    img_array = preprocess_input(img_array)
+        # Preprocess the image for the model
+        img_array = preprocess_input(img_array)
 
-    # Load the trained model
-    loaded_model = load_model('SQLite/trained_model.h5')
+        # Load the trained model
+        loaded_model = load_model('trained_model.h5')
 
-    # Make predictions
-    predictions = loaded_model.predict(img_array)
-    # print(predictions)
+        # Make predictions
+        predictions = loaded_model.predict(img_array)
 
-    # Get the predicted class
-    predicted_class = np.argmax(predictions)
-    print(predicted_class)
+        # Get the predicted class
+        predicted_class = int(np.argmax(predictions))
 
-    # Get the result
-    # result = predictions.flatten()[0]
-    # print(result)
-
-    return predicted_class
+        return predicted_class
+    except Exception as e:
+        return {"error": str(e)}
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the existing model
-    model = load_model('SQLite/trained_model.h5')
+    model = load_model('trained_model.h5')
 
     # Load and split the new dataset
     X_new, y_new, names = model_v1.load_dataset(datafile_path)
@@ -98,8 +100,8 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     # Retrain the model on the new dataset
     model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
-    # Save the updated model
-    model.save('updated_model.h5')
+    # Save the retrained model
+    model.save('retrained_model.h5')
 
     return model
 ''''
@@ -115,7 +117,7 @@ cursor.execute(
    )
 cursor.execute('DELETE FROM faces')
 # Assuming you have a directory with images
-image_directory = 'SQLite/example_images'
+image_directory = 'example_images'
 
 # Get all files in the directory
 image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
@@ -149,5 +151,6 @@ retrain('new_dataset.db')
 
 # Example usage:
 image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
-prediction_result = predict(image_path)
+image = cv2.imread(image_path)
+prediction_result = predict(image)
 '''
