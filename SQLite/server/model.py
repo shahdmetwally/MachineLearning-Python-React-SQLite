@@ -11,6 +11,7 @@ from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
 from SQLite import model_v1
+from PIL import Image
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -52,32 +53,32 @@ def preprocess_image(image):
     return processed_image
 
 
-def predict(image):
-    # Load the image and resize it to match the model's expected input shape
-    img = preprocess_image(image)
-    img_array = img_to_array(img)
-    # Add an extra dimension for the batch
-    img_array = np.expand_dims(img_array, axis=0)
+def predict(image_data):
+    try:
+        # Load the image and resize it to match the model's expected input shape
+        img = Image.open(image_data)
+        processed_img = preprocess_image(img)
+        #print(type(processed_img))
+        img_array = img_to_array(processed_img)
+        img_array = cv2.resize(img_array, (47, 62))
+        # Add an extra dimension for the batch
+        img_array = np.expand_dims(img_array, axis=0)
 
-    # Preprocess the image for the model
-    img_array = preprocess_input(img_array)
+        # Preprocess the image for the model
+        img_array = preprocess_input(img_array)
 
-    # Load the trained model
-    loaded_model = load_model('trained_model.h5')
+        # Load the trained model
+        loaded_model = load_model('trained_model.h5')
 
-    # Make predictions
-    predictions = loaded_model.predict(img_array)
-    # print(predictions)
+        # Make predictions
+        predictions = loaded_model.predict(img_array)
 
-    # Get the predicted class
-    predicted_class = np.argmax(predictions)
-    print(predicted_class)
+        # Get the predicted class
+        predicted_class = int(np.argmax(predictions))
 
-    # Get the result
-    # result = predictions.flatten()[0]
-    # print(result)
-
-    return predicted_class
+        return predicted_class
+    except Exception as e:
+        return {"error": str(e)}
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the existing model

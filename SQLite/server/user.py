@@ -1,39 +1,44 @@
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
-import model
+import SQLite.server.model as model
+from fastapi.responses import JSONResponse
+from pathlib import Path
+from io import BytesIO
+import os
 
-__all__ = ['get_router']
-
-router = APIRouter(
-    prefix='/user'
-)
+app = FastAPI()
 
 predictions_list = []
 
 class PredictionData(BaseModel):
-    image: bytes
+    image: UploadFile
 
-class PredictionResponse(BaseModel):
-    score: float
+# user should be able to upload an image which should initiate a prediction 
+@app.post('/predict')
+def predict(image: UploadFile = File(...)):
+    try:
+       # Ensure that the uploaded file is an image
+        if not image.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
 
-# user should be able to upload an image which should initate a predicition 
-@router.post('/predict', response_model=PredictionResponse)
-def predict(data: PredictionData):
-    if not data.filename.endswith('.jpg'):
-        raise HTTPException(status_code=400, detail="Supported file types: ['{}']".format('jpg'))
-    
-    image = data.image
+        # Save the uploaded image to a temporary file
+        temp_image_path = f"temp_{image.filename}"
+        with open(temp_image_path, "wb") as temp_file:
+            temp_file.write(image.file.read())
+        image_data = BytesIO(image.file.read())
+        prediction_result = model.predict(image_data)
+        #prediction_result_serializable = jsonable_encoder(prediction_result)
+        # Removing the temporary file
+        os.remove(temp_image_path)
 
-    prediction_result = model.predict(image)
+        # Assuming predictions_list is a global list or stored elsewhere
+        predictions_list.append({'score': prediction_result})
 
-    predictions_list.append({'score': prediction_result})
-
-    return {'score': prediction_result}
+        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
+    except Exception as e:
+        return {"error": str(e)}
 
 # user should be able to view the history of all previously predicitions
-@router.get('/predictions', response_model=PredictionResponse)
+@app.get('/predictions')
 def get_predictions():
     return predictions_list
-
-def get_router():
-    return router
