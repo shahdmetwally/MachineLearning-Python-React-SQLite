@@ -63,7 +63,7 @@ def predict(image):
     img_array = preprocess_input(img_array)
 
     # Load the trained model
-    loaded_model = load_model('SQLite/trained_model.h5')
+    loaded_model = load_model('trained_model.h5')
 
     # Make predictions
     predictions = loaded_model.predict(img_array)
@@ -81,7 +81,7 @@ def predict(image):
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the existing model
-    model = load_model('SQLite/trained_model.h5')
+    model = load_model('trained_model.h5')
 
     # Load and split the new dataset
     X_new, y_new, names = model_v1.load_dataset(datafile_path)
@@ -115,7 +115,7 @@ cursor.execute(
    )
 cursor.execute('DELETE FROM faces')
 # Assuming you have a directory with images
-image_directory = 'SQLite/example_images'
+image_directory = 'example_images'
 
 # Get all files in the directory
 image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
