@@ -25,27 +25,19 @@ def predict(image: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
 
         # Save the uploaded image to a temporary file
-        #temp_image_path = Path(f"temp_{image.filename}")
-        #try:
-            #temp_image_path.touch()
-            #logger.info("Temp file created successfully")
-        #except Exception as e:
-            #logger.error(f"Error creating temp file: {e}")
-        #with open(temp_image_path, "wb") as temp_file:
-            #temp_file.write(image.file.read())
-        #image_data = BytesIO(image.file.read())
-        prediction_result = model.predict(image.file)
+        temp_image_path = Path(f"temp_{image.filename}")
+        with open(temp_image_path, "wb") as temp_file:
+            temp_file.write(image.file.read())
+            #temp_file.close()
+        prediction_result = model.predict(temp_image_path)
         #prediction_result_serializable = jsonable_encoder(prediction_result)
         # Removing the temporary file
-        #os.remove(temp_image_path)
+        os.remove(temp_image_path)
 
         # Assuming predictions_list is a global list or stored elsewhere
         predictions_list.append({'score': prediction_result})
 
         return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
-    except HTTPException as e:
-        # Return HTTPException details in the response
-        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
     except Exception as e:
         # Return other exception details in the response
         return JSONResponse(content={"error": str(e)})
