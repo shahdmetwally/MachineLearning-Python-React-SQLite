@@ -57,10 +57,11 @@ def predict(image_data):
     try:
         # Load the image and resize it to match the model's expected input shape
         img = Image.open(image_data)
-        processed_img = preprocess_image(img)
+        img_array = img_to_array(img)
+        processed_img = preprocess_image(img_array)
         #print(type(processed_img))
         img_array = img_to_array(processed_img)
-        img_array = cv2.resize(img_array, (47, 62))
+        #img_array = cv2.resize(img_array, (47, 62))
         # Add an extra dimension for the batch
         img_array = np.expand_dims(img_array, axis=0)
 

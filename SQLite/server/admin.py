@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('test_model')
+logger = logging.getLogger('admin')
 
 app = FastAPI()
 
