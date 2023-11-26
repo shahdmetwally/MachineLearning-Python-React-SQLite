@@ -1,49 +1,18 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
+{% include 'navbar.html' %}
 <html lang="en">
-        <!-- Favicon -->
-        <link rel="icon" href="AiDentity\main\templates\shield.png" type="image/x-icon">
-        <link rel="shortcut icon" href="AiDentity\main\templates\shield.png" type="image/x-icon">
-    <head> 
-        <meta charset="UTF-8" /> 
-        <meta name="viewport" content="width=device-width, initial-scale=l, shrink-to-fit=no" /> 
-        <title>{% block titLe %} AiDentity {% endblock %}</title> 
-        
-        <!-- Bootstrap CSS -->  
-        <link 
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
-        rel="stylesheet" /> 
-    </head> 
-    <body> 
-        <nav class="navbar navbar-expand-lg navbar-light bg-dark"> 
-            <a class="navbar-brand" style= "color: #FFFF"; href="#">AiDentity</a> 
-            <button 
-                class="navbar-toggler" 
-                type="button" 
-                data-toggle="collapse" 
-                data-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false"
-                aria-label="Toggle navigation" 
-            >
-                <span class="navbar-toggler-icon"></span> 
-            </button> 
-            <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" style= "color: #FFFF"; href="#">Home</a> 
-                </li> 
-                <li class="nav-item">
-                    <a class="nav-link" style= "color: #FFFF"; href="#">About</a> 
-                </li> 
-                <li class="nav-item">
-                    <a class="nav-link" style= "color: #FFFF"; href="#">Contact</a> 
-                </li> 
-            </ul> 
-            </div> 
-        </nav> 
-    <div class="container">{% block content %} {% endblock %} </div> 
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=l, shrink-to-fit=no"
+    />
+    <title>{% block titLe %} AiDentity {% endblock %}</title>
+  </head>
+  <body>
+    <div class="container">{% block content %} {% endblock %}</div>
     <!-- jQuery and Bootstrap Bundle (includes Popper)-->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
   </body>
-</html>  
+</html>
