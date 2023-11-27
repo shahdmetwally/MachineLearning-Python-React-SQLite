@@ -5,6 +5,14 @@ name = "pypi"
 
 [packages]
 django = "*"
+numpy = "*"
+tensorflow = "*"
+scikit-learn = "*"
+matplotlib = "*"
+pandas = "*"
+pydantic = "*"
+fastapi = "*"
+mtcnn = "*"
 
 [dev-packages]
 

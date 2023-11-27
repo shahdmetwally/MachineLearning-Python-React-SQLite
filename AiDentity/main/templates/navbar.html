@@ -37,13 +37,27 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" style="color: #000000" ; href="#">Home</a>
+            <a class="nav-link" style="color: #000000" ; href="{% url 'home' %}"
+              >Home</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" style="color: #000000" ; href="#">About</a>
+            <a
+              class="nav-link"
+              style="color: #000000"
+              ;
+              href="{% url 'history' %}"
+              >History</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" style="color: #000000" ; href="#">Contact</a>
+            <a
+              class="nav-link"
+              style="color: #000000"
+              ;
+              href="{% url 'about' %}"
+              >About</a
+            >
           </li>
         </ul>
       </div>

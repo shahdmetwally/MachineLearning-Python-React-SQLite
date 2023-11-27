@@ -10,9 +10,14 @@ p {
   color: #1a353e;
 }
 
+h1 {
+  font-weight: bold;
+}
+
 .wrapper {
   margin-top: 40px;
   color: #1a353e;
+  font-weight: bold;
 }
 
 .middle {
@@ -70,4 +75,12 @@ p {
   height: 600px;
   border-radius: 15px;
   padding: 15px;
+}
+
+.right-inner {
+  color: black;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 10px;
+  height: 89%;
 }

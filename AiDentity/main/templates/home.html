@@ -25,12 +25,26 @@
       </div>
 
       <div class="middle">
-        <button class="button">Upload a file</button>
-        <button class="button">Use Camera</button>
+        <form action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label for="file-upload" class="button">
+            Upload a file
+            <input
+              type="file"
+              id="file-upload"
+              name="upload"
+              style="display: none"
+            />
+          </label>
+          <!--<button class="button">Use Camera</button>-->
+        </form>
       </div>
 
       <div class="right">
         <h1>Status</h1>
+        <div class="right-inner">
+          <h2>bob</h2>
+        </div>
       </div>
     </div>
   </body>
