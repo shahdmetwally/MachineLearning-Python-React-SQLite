@@ -77,7 +77,10 @@ def predict(image_data):
         # Get the predicted class
         predicted_class = int(np.argmax(predictions))
 
-        return predicted_class
+        df = model_v1.load_dataset()[0]
+        predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
+
+        return predicted_name
     except Exception as e:
         return {"error": str(e)}
 
