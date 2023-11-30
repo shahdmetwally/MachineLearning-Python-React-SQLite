@@ -1,6 +1,6 @@
 import io
 import numpy as np
-from tensorflow.keras.applications.vgg16 import preprocess_input
+from keras.applications.vgg16 import preprocess_input
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical

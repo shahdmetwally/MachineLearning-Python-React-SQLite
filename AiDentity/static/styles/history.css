@@ -1,0 +1,27 @@
+body {
+  background-color: #6e99a7;
+}
+
+h1 {
+  font-weight: bold;
+  margin-bottom: 1%;
+}
+
+.outer {
+  color: white;
+  background-color: #1a353e;
+  margin-left: 4%;
+  margin-top: 3%;
+  border-radius: 15px;
+  padding: 25px;
+  width: 90%;
+  height: 800px;
+  text-align: center;
+}
+
+.inner {
+  color: black;
+  background-color: #d9d9d9;
+  border-radius: 10px;
+  height: 89%;
+}
