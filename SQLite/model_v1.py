@@ -1,53 +1,44 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 from sklearn.model_selection import train_test_split
 import sqlite3
-import pickle
 import numpy as np
 import keras
 from keras.utils import to_categorical
-
+import pandas as pd
+from PIL import Image
+import io
+import pickle
 
 def load_dataset(database_path):
-    # Connecting to the SQLite database
+     # Connect to the SQLite database
     conn = sqlite3.connect(database_path)
-    cursor = conn.cursor()
 
-    # Retrieving data from the database
-    cursor.execute('SELECT target, name, image FROM faces')
-    rows = cursor.fetchall()
+    # Query to select all records from the faces table
+    query = "SELECT * FROM faces"
 
-    # Close the connection
+    # Fetch records from the database into a Pandas DataFrame
+    df = pd.read_sql_query(query, conn)
+    df['image'] = df['image'].apply(lambda x: np.array(pickle.loads(x)))
+    # Close the database connection
     conn.close()
-
-    # Splitting the dataset into features (X) and labels (y)
-    images = []
-    names = []
-    targets = []
-
-    for row in rows:
-        target, name, image_bytes = row
-        # Deserialize the image data
-        image_data = pickle.loads(image_bytes)
-        image_data_normalized = image_data
-        images.append(image_data_normalized)
-        names.append(name)
-        targets.append(target)
-    return images, targets, names
+    # Convert image bytes to numpy array
+    num_classes = len(np.unique(df['target']))
+    return df, num_classes
 
 
-# In[2]:
+# In[ ]:
 
 
-def split_dataset(images, names, targets, test_size=0.2, random_state=0):
-    num_classes = len(np.unique(targets))
-    X_train, X_test, y_train, y_test = train_test_split(images, names, test_size=test_size, random_state=random_state)
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
+def split_dataset(df, test_size=0.2, random_state=0):
+    X_train, X_test, y_train, y_test = train_test_split(df['image'].values, df['target'].values, test_size=test_size, random_state=random_state)
+    # Convert the image arrays to a numpy array
+    X_train = np.array([np.array(img) for img in X_train])
+    X_test = np.array([np.array(img) for img in X_test])
     y_train = np.array(y_train)
     y_test = np.array(y_test)
 
@@ -60,10 +51,10 @@ def split_dataset(images, names, targets, test_size=0.2, random_state=0):
     plt.title('First Image in X_train')
     plt.show()
 
-    return X_train, X_test, y_train, y_test, num_classes, names
+    return X_train, X_test, y_train, y_test
 
 
-# In[3]:
+# In[ ]:
 
 
 def preprocess_and_print_shapes(y_train, y_test):
@@ -76,13 +67,13 @@ def preprocess_and_print_shapes(y_train, y_test):
     return y_train_categorical, y_test_categorical
 
 
-# In[4]:
+# In[ ]:
 
 
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
-def train_cnn_model(input_shape, num_classes):
+def train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test):
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
     model.add(MaxPooling2D(2, 2))
@@ -95,28 +86,26 @@ def train_cnn_model(input_shape, num_classes):
     model.add(Flatten())
     model.add(Dense(1024, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
-    
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    
+    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=10)
     return model
 
 
-# In[5]:
+# In[ ]:
 
 
 def get_accuracy(model):
     score = model.evaluate(X_test, y_test, verbose=0)
     print('Test accuracy:', score[1])
-    return score
 
 
-# In[6]:
+# In[ ]:
 
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-def visualize_predictions(model, X_test, y_test, num_rows=5, num_cols=5, figsize=(20, 20)):
+def visualize_predictions(df, model, X_test, y_test, num_rows=5, num_cols=5, figsize=(20, 20)):
     # Make predictions on the test set
     predicted_probabilities = model.predict(X_test)
     predicted_classes = np.argmax(predicted_probabilities, axis=1)
@@ -127,8 +116,9 @@ def visualize_predictions(model, X_test, y_test, num_rows=5, num_cols=5, figsize
 
     # Loop through the test set and visualize predictions
     for i in range(num_rows * num_cols):
-        actual_name = np.argmax(y_test, axis=1)[i]
-        predicted_name = predicted_classes[i]
+        
+        actual_name = df['name'][np.where(df['target'].values == np.argmax(y_test, axis=1)[i])[0][0]]
+        predicted_name = df['name'][np.where(df['target'].values == predicted_classes[i])[0][0]] 
 
         axes[i].imshow(X_test[i])
         axes[i].set_title("Prediction Class = {}\nTrue Class = {}".format(predicted_name, actual_name))
@@ -138,27 +128,66 @@ def visualize_predictions(model, X_test, y_test, num_rows=5, num_cols=5, figsize
     plt.show()
 
 
-# In[7]:
+# In[ ]:
 
 ''''
-images, targets, names = load_dataset('lfw_dataset.db')
-X_train, X_test, y_train, y_test, num_classes, names = split_dataset(images, targets, names)
+df, num_classes = load_dataset('lfw_dataset.db')
+X_train, X_test, y_train, y_test = split_dataset(df)
 
 y_train, y_test = preprocess_and_print_shapes(y_train, y_test)
 
 input_shape = (62, 47, 3)
-cnn_model = train_cnn_model(input_shape, num_classes)
 
+cnn_model = train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test)
 # Train the model
-hist = cnn_model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=10)
 get_accuracy(cnn_model)
 
 # Save the trained model
 cnn_model.save('trained_model.h5')
 
-# Assuming lfw_dataset.target_names contains class names
-visualize_predictions(cnn_model, X_test, y_test)
+#visualize the model on test set
+visualize_predictions(df, cnn_model, X_test, y_test)
 '''
+
+# In[ ]:
+
+
+from numpy import expand_dims
+
+def visualize_feature_maps(model, image):
+    
+    #Get indices of convolutional layers
+    conv_layer_indices = [i for i, layer in enumerate(model.layers) if isinstance(layer, Conv2D)]
+
+    #Create a list to store convolutional layers
+    conv_layers = [layer for layer in model.layers if isinstance(layer, Conv2D)]
+
+    #Create a new model containing only the convolutional layers
+    model2 = Model(inputs=model.inputs, outputs=[layer.output for layer in conv_layers])
+
+    #Expand the dimensions of the input to match the model's expected input shape
+    image = expand_dims(image, axis=0)
+
+    #Get the feature maps
+    feature_maps = model2.predict(image)
+    summed_feature_maps = [fmap_list.sum(axis=-1) for fmap_list in feature_maps]
+
+    #Plot the feature maps
+    fig = plt.figure(figsize=(15, 15))
+    layer_index = 0
+
+    for summed_fmap in summed_feature_maps:
+        ax = plt.subplot(len(conv_layers), 1, layer_index + 1)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.imshow(summed_fmap[0, :, :], cmap='gray')
+
+        layer_index += 1
+
+    plt.show()
+    
+#visualize_feature_maps(cnn_model, X_train[0])
+
 
 # In[ ]:
 
