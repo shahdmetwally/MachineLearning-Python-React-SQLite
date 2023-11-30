@@ -77,7 +77,7 @@ def predict(image_data):
         # Get the predicted class
         predicted_class = int(np.argmax(predictions))
 
-        df = model_v1.load_dataset()[0]
+        df = model_v1.load_dataset('lfw_dataset.db')[0]
         predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
 
         return predicted_name
