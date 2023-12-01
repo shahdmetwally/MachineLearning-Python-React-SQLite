@@ -25,15 +25,16 @@
       </div>
 
       <div class="middle">
-        <form action="" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
+        <form action="#" method="POST" enctype="multipart/form-data">
+          {% csrf_token %} {{ form.as_table }}
           <label for="file-upload" class="button">
-            Upload a file
+            Predict
             <input
-              type="file"
+              type="submit"
               id="file-upload"
               name="upload"
               style="display: none"
+              required
             />
           </label>
           <!--<button class="button">Use Camera</button>-->
@@ -43,7 +44,7 @@
       <div class="right">
         <h1>Status</h1>
         <div class="right-inner">
-          <h2>bob</h2>
+          <h2>{{ predictions }}</h2>
         </div>
       </div>
     </div>
