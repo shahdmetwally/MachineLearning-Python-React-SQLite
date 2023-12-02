@@ -4,12 +4,18 @@ import SQLite.server.model as model
 from fastapi.responses import JSONResponse
 from pathlib import Path
 import os
-import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+origins = ["http://localhost:3000", " http://localhost:3000/"]
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('user')
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 predictions_list = []
 
