@@ -47,9 +47,9 @@ def split_dataset(df, test_size=0.2, random_state=0):
     print("Testing set shape:", X_test.shape, y_test.shape)
 
     # Plot the first image in X_train
-    plt.imshow(X_train[0])
-    plt.title('First Image in X_train')
-    plt.show()
+    #plt.imshow(X_train[0])
+    #plt.title('First Image in X_train')
+    #plt.show()
 
     return X_train, X_test, y_train, y_test
 
@@ -94,9 +94,72 @@ def train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test):
 # In[ ]:
 
 
-def get_accuracy(model):
-    score = model.evaluate(X_test, y_test, verbose=0)
-    print('Test accuracy:', score[1])
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Resizing
+from keras.applications import vgg16
+def train_model_v2(num_classes, X_train, y_train, X_test, y_test):
+    
+    vgg=vgg16.VGG16(weights='imagenet', include_top=False, input_shape=(224,224,3))
+    for layer in vgg.layers:
+        layer.trainable = False
+
+
+    model = Sequential()
+    model.add(Resizing(224, 224))
+    model.add(vgg)
+    model.add(Flatten())
+    model.add(Dense(num_classes, activation='softmax'))
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=10)
+    return model
+
+
+# In[ ]:
+
+
+from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
+import numpy as np
+
+def evaluate_model(model, X_test, y_test):
+    # Make predictions on the test set
+    predicted_probabilities = model.predict(X_test)
+    predicted_classes = np.argmax(predicted_probabilities, axis=1)
+
+    # Check if y_test is one-hot encoded and convert it back to class labels
+    if len(y_test.shape) > 1 and y_test.shape[1] > 1:
+        y_test = np.argmax(y_test, axis=1)
+
+    # Accuracy
+    accuracy1 = accuracy_score(y_test, predicted_classes)
+    print("Accuracy:", accuracy1)
+
+    # Precision
+    precision = precision_score(y_test, predicted_classes, average='weighted')
+    print("Precision:", precision)
+
+    # Recall
+    recall = recall_score(y_test, predicted_classes, average='weighted')
+    print("Recall:", recall)
+
+    # F1 Score
+    f1 = f1_score(y_test, predicted_classes, average='weighted')
+    print("F1 Score:", f1)
+
+    # Compute confusion matrix
+    cm = confusion_matrix(y_test, predicted_classes)
+
+    # Sum the values for TP, TN, FP, FN
+    TP = np.sum(np.diag(cm))
+    TN = np.sum(np.delete(np.delete(cm, np.arange(len(cm)), axis=0), np.arange(len(cm)), axis=1))
+    FP = np.sum(cm, axis=0) - np.diag(cm)
+    FN = np.sum(cm, axis=1) - np.diag(cm)
+
+    # Print the results
+    print("True Positives (TP):", TP)
+    print("True Negatives (TN):", TN)
+    print("False Positives (FP):", np.sum(FP))
+    print("False Negatives (FN):", np.sum(FN))
+    return accuracy1, precision, recall, f1
 
 
 # In[ ]:
@@ -138,16 +201,18 @@ y_train, y_test = preprocess_and_print_shapes(y_train, y_test)
 
 input_shape = (62, 47, 3)
 
-cnn_model = train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test)
 # Train the model
-get_accuracy(cnn_model)
+cnn_model = train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test)
+
+#Evaluate the model
+evaluate_model(cnn_model, X_test, y_test)
 
 # Save the trained model
 cnn_model.save('trained_model.h5')
 
 #visualize the model on test set
 visualize_predictions(df, cnn_model, X_test, y_test)
-'''
+
 
 # In[ ]:
 
@@ -186,9 +251,9 @@ def visualize_feature_maps(model, image):
 
     plt.show()
     
-#visualize_feature_maps(cnn_model, X_train[0])
+visualize_feature_maps(cnn_model, X_train[0])
 
-
+'''
 # In[ ]:
 
 
