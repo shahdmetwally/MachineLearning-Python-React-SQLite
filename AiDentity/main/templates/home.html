@@ -20,7 +20,14 @@
       <div class="left">
         <h1>History</h1>
         <div class="left-inner">
-          <h2>bob</h2>
+          {% for prediction in predictions %}
+          <div class="history-entry">
+            <div class="entry-content">
+              <h3>{{ prediction.name }}</h3>
+              <img src="{{ prediction.image.url }}" alt="Predicted Image" />
+            </div>
+          </div>
+          {% endfor %}
         </div>
       </div>
 
@@ -44,7 +51,7 @@
       <div class="right">
         <h1>Status</h1>
         <div class="right-inner">
-          <h2>{{ predictions }}</h2>
+          <h2>{{ name }}</h2>
         </div>
       </div>
     </div>

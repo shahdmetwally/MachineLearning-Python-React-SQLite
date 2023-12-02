@@ -7,7 +7,9 @@ from keras.utils import to_categorical
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from SQLite import model_v1
+from AiDentity import (
+    model_v1,
+)  # model_v1 moved to AiDentity, this import probably won't work
 from PIL import Image
 
 

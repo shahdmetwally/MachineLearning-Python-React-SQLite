@@ -64,6 +64,37 @@ h1 {
   border-radius: 10px;
   padding: 10px;
   height: 89%;
+  overflow-y: auto;
+}
+
+.history-entry {
+  border: 1px solid #ffffff;
+  background-color: white;
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.entry-content {
+  display: flex;
+  align-items: center;
+}
+
+.entry-content h3 {
+  margin-right: 9px;
+  padding-left: 5px;
+  white-space: nowrap; /* Prevents name from wrapping */
+  overflow-x: auto;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+.entry-content img {
+  max-width: 90px;
+  height: auto;
+  margin-left: auto;
+  border-radius: 20px;
 }
 
 .right {

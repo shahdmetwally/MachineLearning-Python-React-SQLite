@@ -1,8 +1,5 @@
 from django import forms
-from main.models import Face
 
 
-class Faceform(forms.ModelForm):
-    class Meta:
-        model = Face
-        fields = ["image"]
+class FaceForm(forms.Form):
+    image = forms.ImageField()
