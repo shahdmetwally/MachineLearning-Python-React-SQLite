@@ -12,6 +12,21 @@ import cv2
 from contextlib import redirect_stdout
 from SQLite import model_v1
 from PIL import Image
+from pathlib import Path
+import time
+
+def get_latest_model_version():
+    model_dir = 'SQLite/model_registry'  # Replace with the actual path to your model directory
+    model_files = Path(model_dir).glob('model_version_*.h5')
+    
+    # Extract timestamps and sort the files based on the timestamp
+    sorted_models = sorted(model_files, key=lambda f: os.path.getmtime(f), reverse=True)
+    
+    if sorted_models:
+        latest_version = sorted_models[0]
+        return str(latest_version)
+    else:
+        return None  # No model versions found
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -68,8 +83,9 @@ def predict(image_data):
         # Preprocess the image for the model
         img_array = preprocess_input(img_array)
 
-        # Load the trained model
-        loaded_model = load_model('trained_model.h5')
+        # Load the latest trained model
+        latest_model = get_latest_model_version()
+        loaded_model = load_model(latest_model)
 
         # Make predictions
         predictions = loaded_model.predict(img_array)
@@ -85,8 +101,9 @@ def predict(image_data):
         return {"error": str(e)}
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
-    # Load the existing model
-    model = load_model('trained_model.h5')
+    # Load the latest model
+    latest_model = get_latest_model_version()
+    model = load_model(latest_model)
 
     # Load and split the new dataset
     df = model_v1.load_dataset(datafile_path)[0]
@@ -96,7 +113,8 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-    
+
+    accuracy, precision, recall, f1 = model_v1.evaluate_model(model, X_new, y_new)
 
     print(X_new.shape)
     print(y_new_categorical.shape)
@@ -109,25 +127,33 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     model.save('retrained_model.h5')
     # Load the retrained model
     retrained_model = load_model('retrained_model.h5')
+    old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
+    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
 
-    accuracy, precision, recall, f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
+    if retrianed_accuracy > accuracy or retrianed_precision > precision or retrianed_recall > recall or retrianed_f1 > f1:
+        print("retained model is better")
+        save_path = "SQLite/model_registry"
+        timestamp = time.strftime("%Y%m%d%H%M%S")
+        retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
+        return retrained_model, retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
+    else:
+        print("older model is better")
+        return old_model, retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
 
-    return model, accuracy, precision, recall, f1
-    
 
-''''
+
 conn = sqlite3.connect('new_dataset.db')
 cursor = conn.cursor()
-cursor.execute(
+cursor.execute('''
     CREATE TABLE IF NOT EXISTS faces (
         id INTEGER PRIMARY KEY,
         target INTEGER,
         name TEXT NOT NULL,
         image BLOB NOT NULL
        )
-   )
+   ''')
 cursor.execute('DELETE FROM faces')
 # Assuming you have a directory with images
 image_directory = 'example_images'
@@ -165,4 +191,3 @@ retrain('new_dataset.db')
 image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
-'''

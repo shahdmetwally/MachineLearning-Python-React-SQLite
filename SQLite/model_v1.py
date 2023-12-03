@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 from sklearn.model_selection import train_test_split
@@ -31,7 +31,7 @@ def load_dataset(database_path):
     return df, num_classes
 
 
-# In[ ]:
+# In[2]:
 
 
 def split_dataset(df, test_size=0.2, random_state=0):
@@ -47,14 +47,14 @@ def split_dataset(df, test_size=0.2, random_state=0):
     print("Testing set shape:", X_test.shape, y_test.shape)
 
     # Plot the first image in X_train
-    #plt.imshow(X_train[0])
-    #plt.title('First Image in X_train')
-    #plt.show()
+    plt.imshow(X_train[0])
+    plt.title('First Image in X_train')
+    plt.show()
 
     return X_train, X_test, y_train, y_test
 
 
-# In[ ]:
+# In[3]:
 
 
 def preprocess_and_print_shapes(y_train, y_test):
@@ -67,7 +67,7 @@ def preprocess_and_print_shapes(y_train, y_test):
     return y_train_categorical, y_test_categorical
 
 
-# In[ ]:
+# In[4]:
 
 
 from keras.models import Sequential
@@ -91,7 +91,7 @@ def train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test):
     return model
 
 
-# In[ ]:
+# In[5]:
 
 
 from keras.models import Sequential
@@ -114,7 +114,7 @@ def train_model_v2(num_classes, X_train, y_train, X_test, y_test):
     return model
 
 
-# In[ ]:
+# In[6]:
 
 
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
@@ -162,7 +162,7 @@ def evaluate_model(model, X_test, y_test):
     return accuracy1, precision, recall, f1
 
 
-# In[ ]:
+# In[7]:
 
 
 import matplotlib.pyplot as plt
@@ -191,9 +191,10 @@ def visualize_predictions(df, model, X_test, y_test, num_rows=5, num_cols=5, fig
     plt.show()
 
 
-# In[ ]:
+# In[8]:
 
 ''''
+import time
 df, num_classes = load_dataset('lfw_dataset.db')
 X_train, X_test, y_train, y_test = split_dataset(df)
 
@@ -205,16 +206,22 @@ input_shape = (62, 47, 3)
 cnn_model = train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test)
 
 #Evaluate the model
-evaluate_model(cnn_model, X_test, y_test)
+accuracy1, precision, recall, f1 = evaluate_model(cnn_model, X_test, y_test)
+print("Accuracy:", accuracy1)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 Score:", f1)
 
 # Save the trained model
-cnn_model.save('trained_model.h5')
+save_path = "./model_registry/"
+timestamp = time.strftime("%Y%m%d%H%M%S")
+cnn_model.save(f'{save_path}model_version_{timestamp}.h5')
 
 #visualize the model on test set
 visualize_predictions(df, cnn_model, X_test, y_test)
 
 
-# In[ ]:
+# In[9]:
 
 
 from numpy import expand_dims
