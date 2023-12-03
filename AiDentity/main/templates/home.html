@@ -34,6 +34,20 @@
       <div class="middle">
         <form action="#" method="POST" enctype="multipart/form-data">
           {% csrf_token %} {{ form.as_table }}
+          <!-- Image preview -->
+          <div id="image-preview-container">
+            <img
+              id="image-preview"
+              src="#"
+              alt="Image Preview"
+              style="display: none"
+            />
+            <p id="waiting-message">Waiting for an image ...</p>
+          </div>
+
+          <!-- Static JS file -->
+          <script src="{% static 'js/home.js' %}"></script>
+
           <label for="file-upload" class="button">
             Predict
             <input
