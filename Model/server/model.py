@@ -114,14 +114,14 @@ def predict(image_data):
         img = Image.open(image_data)
         img_array = img_to_array(img)
         processed_img = preprocess_image(img_array)
-        #print(type(processed_img))
+
         img_array = img_to_array(processed_img)
-        #img_array = cv2.resize(img_array, (47, 62))
+
         # Add an extra dimension for the batch
         img_array = np.expand_dims(img_array, axis=0)
 
         # Preprocess the image for the model
-        img_array = preprocess_input(img_array)
+        # img_array = preprocess_input(img_array)
 
         # Load the latest trained model
         latest_model = get_latest_model_version()
@@ -133,7 +133,7 @@ def predict(image_data):
         # Get the predicted class
         predicted_class = int(np.argmax(predictions))
 
-        df = model_v1.load_dataset('lfw_dataset.db')[0]
+        df = model_v1.load_dataset('lfw_augmented_dataset.db')[0]
         predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
         print(predicted_name)
 
