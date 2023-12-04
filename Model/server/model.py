@@ -10,7 +10,7 @@ import os
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from SQLite import model_v1
+from Model import model_v1
 from PIL import Image
 from pathlib import Path
 import time
