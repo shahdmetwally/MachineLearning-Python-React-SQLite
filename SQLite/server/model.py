@@ -16,17 +16,38 @@ from pathlib import Path
 import time
 
 def get_latest_model_version():
-    model_dir = 'SQLite/model_registry'  # Replace with the actual path to your model directory
+    model_dir = 'SQLite/model_registry' 
     model_files = Path(model_dir).glob('model_version_*.h5')
     
-    # Extract timestamps and sort the files based on the timestamp
     sorted_models = sorted(model_files, key=lambda f: os.path.getmtime(f), reverse=True)
     
     if sorted_models:
         latest_version = sorted_models[0]
         return str(latest_version)
     else:
-        return None  # No model versions found
+        return None  # No models found
+
+def get_model_by_version(version):
+    model_dir = 'SQLite/model_registry' 
+    model_file = list(Path(model_dir).glob(f'model_version_{version}.h5'))
+    
+    if model_file:
+        return str(model_file[0])
+    else:
+        return None  # No models found
+    
+
+def get_all_models():
+    model_dir = 'SQLite/model_registry' 
+    model_files = list(Path(model_dir).glob('model_version_*.h5'))
+    
+    if model_files:
+        version_numbers = [str(model_file.stem) for model_file in model_files]
+        for version_number in version_numbers:
+            print(version_number)
+        return version_numbers
+    else:
+        return None  # No models found
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -95,6 +116,7 @@ def predict(image_data):
 
         df = model_v1.load_dataset('lfw_dataset.db')[0]
         predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
+        print(predicted_name)
 
         return predicted_name
     except Exception as e:
@@ -137,23 +159,25 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
         save_path = "SQLite/model_registry"
         timestamp = time.strftime("%Y%m%d%H%M%S")
         retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
-        return retrained_model, retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
     else:
         print("older model is better")
-        return old_model, retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
+
+    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
 
 
-
+get_model_by_version('20231204092234')
+get_all_models()
+''''
 conn = sqlite3.connect('new_dataset.db')
 cursor = conn.cursor()
-cursor.execute('''
+cursor.execute(
     CREATE TABLE IF NOT EXISTS faces (
         id INTEGER PRIMARY KEY,
         target INTEGER,
         name TEXT NOT NULL,
         image BLOB NOT NULL
        )
-   ''')
+   )
 cursor.execute('DELETE FROM faces')
 # Assuming you have a directory with images
 image_directory = 'example_images'
@@ -188,6 +212,7 @@ conn.close()
 # Example usage
 retrain('new_dataset.db')
 # Example usage:
-image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
+image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
+'''
