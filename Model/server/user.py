@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
-import SQLite.server.model as model
+import Model.server.model as model
 from fastapi.responses import JSONResponse
 from pathlib import Path
 import os

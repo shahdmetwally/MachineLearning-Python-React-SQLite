@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile
 from pathlib import Path
-import SQLite.server.model as model
-import logging
+import Model.server.model as model
+import os
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,7 +32,7 @@ def upload_and_retrain(db_file: UploadFile):
         accuracy, precision, recall, f1 = model.retrain(temp_db_path)
 
         # Clean up temporary files
-        temp_db_path.unlink()
+        os.remove(temp_db_path)
 
         return JSONResponse(content={"message": "Data uploaded and model retrained successfully", "accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1})
     except Exception as e:

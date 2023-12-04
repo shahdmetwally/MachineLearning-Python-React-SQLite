@@ -35,7 +35,7 @@ class Prediction(Base):
 Base.metadata.create_all(bind=engine)
 
 def get_latest_model_version():
-    model_dir = 'SQLite/model_registry' 
+    model_dir = 'Model/model_registry' 
     model_files = Path(model_dir).glob('model_version_*.h5')
     
     sorted_models = sorted(model_files, key=lambda f: os.path.getmtime(f), reverse=True)
@@ -47,7 +47,7 @@ def get_latest_model_version():
         return None  # No models found
 
 def get_model_by_version(version):
-    model_dir = 'SQLite/model_registry' 
+    model_dir = 'Model/model_registry' 
     model_file = list(Path(model_dir).glob(f'model_version_{version}.h5'))
     
     if model_file:
@@ -57,7 +57,7 @@ def get_model_by_version(version):
     
 
 def get_all_models():
-    model_dir = 'SQLite/model_registry' 
+    model_dir = 'Model/model_registry' 
     model_files = list(Path(model_dir).glob('model_version_*.h5'))
     
     if model_files:
@@ -175,7 +175,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     if retrianed_accuracy > accuracy or retrianed_precision > precision or retrianed_recall > recall or retrianed_f1 > f1:
         print("retained model is better")
-        save_path = "SQLite/model_registry"
+        save_path = "Model/model_registry/"
         timestamp = time.strftime("%Y%m%d%H%M%S")
         retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
     else:
@@ -225,7 +225,7 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
-
+'''
 # Example usage
 retrain('new_dataset.db')
 
@@ -236,4 +236,3 @@ prediction_result = predict(image)
 
 get_model_by_version('20231204092234')
 get_all_models()
-'''
