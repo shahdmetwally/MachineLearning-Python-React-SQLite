@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 origins = ["http://localhost:3000", " http://localhost:3000/"]
@@ -17,10 +18,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-predictions_list = []
 
 class PredictionData(BaseModel):
     image: UploadFile
+
+
+def save_prediction_to_db(db: Session, score: int):
+    db_prediction = model.Prediction(score=score)
+    db.add(db_prediction)
+    db.commit()
+    db.refresh(db_prediction)
+    return db_prediction
 
 # user should be able to upload an image which should initiate a prediction 
 @app.post('/predict')
@@ -40,8 +48,10 @@ def predict(image: UploadFile = File(...)):
         # Removing the temporary file
         os.remove(temp_image_path)
 
-        # Assuming predictions_list is a global list or stored elsewhere
-        predictions_list.append({'score': prediction_result})
+        # Storing result in database
+        db = model.SessionLocal()
+        db_prediction = save_prediction_to_db(db, prediction_result)
+        db.close()
 
         return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
     except Exception as e:
@@ -51,4 +61,7 @@ def predict(image: UploadFile = File(...)):
 # user should be able to view the history of all previously predicitions
 @app.get('/predictions')
 def get_predictions():
-    return predictions_list
+    db = model.SessionLocal()
+    predictions = db.query(model.Prediction).all()
+    db.close()
+    return predictions

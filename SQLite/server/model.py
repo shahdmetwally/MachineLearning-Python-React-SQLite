@@ -12,6 +12,61 @@ import cv2
 from contextlib import redirect_stdout
 from SQLite import model_v1
 from PIL import Image
+from pathlib import Path
+import time
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+DATABASE_URL = "sqlite:///./prediction_history.db"
+Base = declarative_base()
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+class Prediction(Base):
+    __tablename__ = "predictions"
+
+    id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
+    score = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create the table in the database
+Base.metadata.create_all(bind=engine)
+
+def get_latest_model_version():
+    model_dir = 'SQLite/model_registry' 
+    model_files = Path(model_dir).glob('model_version_*.h5')
+    
+    sorted_models = sorted(model_files, key=lambda f: os.path.getmtime(f), reverse=True)
+    
+    if sorted_models:
+        latest_version = sorted_models[0]
+        return str(latest_version)
+    else:
+        return None  # No models found
+
+def get_model_by_version(version):
+    model_dir = 'SQLite/model_registry' 
+    model_file = list(Path(model_dir).glob(f'model_version_{version}.h5'))
+    
+    if model_file:
+        return str(model_file[0])
+    else:
+        return None  # No models found
+    
+
+def get_all_models():
+    model_dir = 'SQLite/model_registry' 
+    model_files = list(Path(model_dir).glob('model_version_*.h5'))
+    
+    if model_files:
+        version_numbers = [str(model_file.stem) for model_file in model_files]
+        for version_number in version_numbers:
+            print(version_number)
+        return version_numbers
+    else:
+        return None  # No models found
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -68,8 +123,9 @@ def predict(image_data):
         # Preprocess the image for the model
         img_array = preprocess_input(img_array)
 
-        # Load the trained model
-        loaded_model = load_model('trained_model.h5')
+        # Load the latest trained model
+        latest_model = get_latest_model_version()
+        loaded_model = load_model(latest_model)
 
         # Make predictions
         predictions = loaded_model.predict(img_array)
@@ -79,14 +135,16 @@ def predict(image_data):
 
         df = model_v1.load_dataset('lfw_dataset.db')[0]
         predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
+        print(predicted_name)
 
         return predicted_name
     except Exception as e:
         return {"error": str(e)}
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
-    # Load the existing model
-    model = load_model('trained_model.h5')
+    # Load the latest model
+    latest_model = get_latest_model_version()
+    model = load_model(latest_model)
 
     # Load and split the new dataset
     df = model_v1.load_dataset(datafile_path)[0]
@@ -96,7 +154,8 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-    
+
+    accuracy, precision, recall, f1 = model_v1.evaluate_model(model, X_new, y_new)
 
     print(X_new.shape)
     print(y_new_categorical.shape)
@@ -109,13 +168,20 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     model.save('retrained_model.h5')
     # Load the retrained model
     retrained_model = load_model('retrained_model.h5')
+    old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
+    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
 
-    accuracy, precision, recall, f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
+    if retrianed_accuracy > accuracy or retrianed_precision > precision or retrianed_recall > recall or retrianed_f1 > f1:
+        print("retained model is better")
+        save_path = "SQLite/model_registry"
+        timestamp = time.strftime("%Y%m%d%H%M%S")
+        retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
+    else:
+        print("older model is better")
 
-    return model, accuracy, precision, recall, f1
-    
+    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
 
 ''''
 conn = sqlite3.connect('new_dataset.db')
@@ -159,10 +225,15 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
+
 # Example usage
 retrain('new_dataset.db')
+
 # Example usage:
-image_path = '/Users/shahd.metwally/monorepo/SQLite/Arturo_Gatti_0002.jpg'
+image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
+
+get_model_by_version('20231204092234')
+get_all_models()
 '''
