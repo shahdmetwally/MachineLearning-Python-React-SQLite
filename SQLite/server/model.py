@@ -14,6 +14,25 @@ from SQLite import model_v1
 from PIL import Image
 from pathlib import Path
 import time
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+DATABASE_URL = "sqlite:///./prediction_history.db"
+Base = declarative_base()
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+class Prediction(Base):
+    __tablename__ = "predictions"
+
+    id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
+    score = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create the table in the database
+Base.metadata.create_all(bind=engine)
 
 def get_latest_model_version():
     model_dir = 'SQLite/model_registry' 
@@ -164,9 +183,6 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
 
-
-get_model_by_version('20231204092234')
-get_all_models()
 ''''
 conn = sqlite3.connect('new_dataset.db')
 cursor = conn.cursor()
@@ -209,10 +225,15 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
+
 # Example usage
 retrain('new_dataset.db')
+
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
+
+get_model_by_version('20231204092234')
+get_all_models()
 '''
