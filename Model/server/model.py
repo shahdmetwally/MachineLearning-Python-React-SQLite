@@ -225,7 +225,7 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
-'''
+
 # Example usage
 retrain('new_dataset.db')
 
@@ -236,3 +236,4 @@ prediction_result = predict(image)
 
 get_model_by_version('20231204092234')
 get_all_models()
+'''
