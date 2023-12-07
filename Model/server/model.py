@@ -16,21 +16,23 @@ from pathlib import Path
 import time
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 
 DATABASE_URL = "sqlite:///./prediction_history.db"
 Base = declarative_base()
 engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
 class Prediction(Base):
     __tablename__ = "predictions"
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
     score = Column(Integer)
+    image = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+Base.metadata.drop_all(bind=engine)
 # Create the table in the database
 Base.metadata.create_all(bind=engine)
 
@@ -59,9 +61,10 @@ def get_model_by_version(version):
 def get_all_models():
     model_dir = 'Model/model_registry' 
     model_files = list(Path(model_dir).glob('model_version_*.h5'))
+    retrained_files = list(Path(model_dir).glob('retrained_model_version_*.h5'))
     
-    if model_files:
-        version_numbers = [str(model_file.stem) for model_file in model_files]
+    if model_files or retrained_files:
+        version_numbers = [str(model_file.stem) for model_file in model_files + retrained_files]
         for version_number in version_numbers:
             print(version_number)
         return version_numbers
@@ -165,9 +168,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
     # Save the retrained model
-    model.save('retrained_model.h5')
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    temp_model_path = f'Model/model_registry/retrained_model_version_{timestamp}.h5'
+    model.save(temp_model_path)
     # Load the retrained model
-    retrained_model = load_model('retrained_model.h5')
+    retrained_model = load_model(temp_model_path)
     old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
@@ -178,6 +183,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
         save_path = "Model/model_registry/"
         timestamp = time.strftime("%Y%m%d%H%M%S")
         retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
+        os.remove(temp_model_path)
     else:
         print("older model is better")
 
@@ -225,7 +231,7 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
-'''
+
 # Example usage
 retrain('new_dataset.db')
 
@@ -236,3 +242,4 @@ prediction_result = predict(image)
 
 get_model_by_version('20231204092234')
 get_all_models()
+'''

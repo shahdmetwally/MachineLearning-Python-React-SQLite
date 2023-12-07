@@ -43,7 +43,9 @@ def upload_and_retrain(db_file: UploadFile):
 def get_all_models():
     try:
         model_versions = model.get_all_models()
-        active_model = model.get_latest_model_version()
+        active_model_path = model.get_latest_model_version()
+        active_model_path = Path(active_model_path)
+        active_model= active_model_path.stem
 
         return JSONResponse(content={"message": "Models were obtained successfully", "models": model_versions, "active_model": active_model})
     except Exception as e:
