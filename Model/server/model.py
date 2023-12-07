@@ -6,6 +6,7 @@ from keras.utils import to_categorical
 import sqlite3
 import pickle
 import os
+import json
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
@@ -124,13 +125,23 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
+    print(X_new.shape)
+    print(y_new_categorical.shape)
 
     accuracy, precision, recall, f1 = model_v1.evaluate_model(model, X_new, y_new)
 
-    print(X_new.shape)
-    print(y_new_categorical.shape)
+    # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
+    # therefore, we save the evaluation metrics in a json file and load the data from there
+    if accuracy == 0 and precision == 0 and recall == 0 and f1 == 0:
+        metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
+        with open(metrics_file_path, 'r') as metrics_file:
+            loaded_metrics = json.load(metrics_file)
+        # Access the metrics
+        accuracy = loaded_metrics['accuracy']
+        precision = loaded_metrics['precision']
+        recall = loaded_metrics['recall']
+        f1 = loaded_metrics['f1_score']
     
-
     # Retrain the model on the new dataset
     model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
@@ -144,8 +155,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
     retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
+    
+    print(accuracy, precision, recall, f1)
+    print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
 
-    if retrianed_accuracy > accuracy or retrianed_precision > precision or retrianed_recall > recall or retrianed_f1 > f1:
+    if retrianed_accuracy > accuracy and retrianed_precision > precision and retrianed_recall > recall and retrianed_f1 > f1:
         print("retained model is better")
         save_path = "Model/model_registry/"
         timestamp = time.strftime("%Y%m%d%H%M%S")
@@ -155,7 +169,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
         print("older model is better")
         os.remove(temp_model_path)
 
-    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
+    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
 
 ''''
 conn = sqlite3.connect('new_dataset.db')
@@ -199,7 +213,7 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
-'''
+
 # Example usage
 retrain('new_dataset.db')
 
@@ -207,3 +221,4 @@ retrain('new_dataset.db')
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
+'''

@@ -29,16 +29,22 @@ def upload_and_retrain(db_file: UploadFile):
         with db_file.file as source_file, temp_db_path.open("wb") as temp_db:
             temp_db.write(source_file.read())
 
-        # Assuming you have a method in your model module to retrain the model based on a database
-        accuracy, precision, recall, f1 = model.retrain(temp_db_path)
+        retrained_accuracy, retrained_precision, retrained_recall, retrained_f1, old_accuracy, old_precision, old_recall, old_f1, = model.retrain(temp_db_path)
 
         # Clean up temporary files
         os.remove(temp_db_path)
 
-        return JSONResponse(content={"message": "Data uploaded and model retrained successfully", "accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1})
+        return JSONResponse(content={"message": "Data uploaded and model retrained successfully", 
+                                     "retrained_accuracy": retrained_accuracy, 
+                                     "retrained_precision": retrained_precision, 
+                                     "retrained_recall": retrained_recall, 
+                                     "retrained_f1": retrained_f1, 
+                                     "old_accuracy": old_accuracy, 
+                                     "old_precision": old_precision, 
+                                     "old_recall": old_recall, 
+                                     "old_f1": old_f1})
     except Exception as e:
         return {"error": str(e)}
-
 
 @app.get('/models')
 def get_all_models():
