@@ -1,7 +1,6 @@
 import io
 import numpy as np
-from keras.applications.vgg16 import preprocess_input
-from keras.preprocessing.image import load_img, img_to_array
+from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
 import sqlite3
@@ -12,12 +11,12 @@ import cv2
 from contextlib import redirect_stdout
 from Model import model_v1
 from PIL import Image
-from pathlib import Path
 import time
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
+import Model.server.model_registry as model_registry
 
 DATABASE_URL = "sqlite:///./prediction_history.db"
 Base = declarative_base()
@@ -35,41 +34,6 @@ class Prediction(Base):
 Base.metadata.drop_all(bind=engine)
 # Create the table in the database
 Base.metadata.create_all(bind=engine)
-
-def get_latest_model_version():
-    model_dir = 'Model/model_registry' 
-    model_files = Path(model_dir).glob('model_version_*.h5')
-    
-    sorted_models = sorted(model_files, key=lambda f: os.path.getmtime(f), reverse=True)
-    
-    if sorted_models:
-        latest_version = sorted_models[0]
-        return str(latest_version)
-    else:
-        return None  # No models found
-
-def get_model_by_version(version):
-    model_dir = 'Model/model_registry' 
-    model_file = list(Path(model_dir).glob(f'model_version_{version}.h5'))
-    
-    if model_file:
-        return str(model_file[0])
-    else:
-        return None  # No models found
-    
-
-def get_all_models():
-    model_dir = 'Model/model_registry' 
-    model_files = list(Path(model_dir).glob('model_version_*.h5'))
-    retrained_files = list(Path(model_dir).glob('retrained_model_version_*.h5'))
-    
-    if model_files or retrained_files:
-        version_numbers = [str(model_file.stem) for model_file in model_files + retrained_files]
-        for version_number in version_numbers:
-            print(version_number)
-        return version_numbers
-    else:
-        return None  # No models found
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -128,7 +92,7 @@ def predict(image_data):
             img_array = np.expand_dims(img_array, axis=0)
 
             # Load the latest trained model
-            latest_model = get_latest_model_version()
+            latest_model = model_registry.get_latest_model_version()
             loaded_model = load_model(latest_model)
 
             # Make predictions
@@ -149,7 +113,7 @@ def predict(image_data):
 
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the latest model
-    latest_model = get_latest_model_version()
+    latest_model = model_registry.get_latest_model_version()
     model = load_model(latest_model)
 
     # Load and split the new dataset
@@ -189,6 +153,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
         os.remove(temp_model_path)
     else:
         print("older model is better")
+        os.remove(temp_model_path)
 
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1
 
@@ -234,7 +199,7 @@ for image_file in image_files:
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
-
+'''
 # Example usage
 retrain('new_dataset.db')
 
@@ -242,7 +207,3 @@ retrain('new_dataset.db')
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
-
-get_model_by_version('20231204092234')
-get_all_models()
-'''

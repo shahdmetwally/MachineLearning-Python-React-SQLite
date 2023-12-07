@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile
 from pathlib import Path
 import Model.server.model as model
+import Model.server.model_registry as model_registry
 import os
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,11 +43,20 @@ def upload_and_retrain(db_file: UploadFile):
 @app.get('/models')
 def get_all_models():
     try:
-        model_versions = model.get_all_models()
-        active_model_path = model.get_latest_model_version()
+        model_versions = model_registry.get_all_models()
+        active_model_path = model_registry.get_latest_model_version()
         active_model_path = Path(active_model_path)
         active_model= active_model_path.stem
 
         return JSONResponse(content={"message": "Models were obtained successfully", "models": model_versions, "active_model": active_model})
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.put('/model')
+def set_active_model(version: str):
+    try:
+        model_registry.set_active_model(version)
+
+        return JSONResponse(content={"message": f"Model {version} has been set as the active model successfully"})
     except Exception as e:
         return {"error": str(e)}
