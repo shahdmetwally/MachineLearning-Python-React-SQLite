@@ -23,8 +23,8 @@ class PredictionData(BaseModel):
     image: UploadFile
 
 
-def save_prediction_to_db(db: Session, score: int):
-    db_prediction = model.Prediction(score=score)
+def save_prediction_to_db(db: Session, score: int, image: str):
+    db_prediction = model.Prediction(score=score, image=image)
     db.add(db_prediction)
     db.commit()
     db.refresh(db_prediction)
@@ -39,21 +39,21 @@ def predict(image: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
 
         # Save the uploaded image to a temporary file
-        temp_image_path = Path(f"temp_{image.filename}")
+        temp_image_path = Path(f"Model/user_images/temp_{image.filename}")
         with open(temp_image_path, "wb") as temp_file:
             temp_file.write(image.file.read())
             #temp_file.close()
         prediction_result = model.predict(temp_image_path)
-        #prediction_result_serializable = jsonable_encoder(prediction_result)
         # Removing the temporary file
-        os.remove(temp_image_path)
+        #os.remove(temp_image_path)
 
+        image_str = temp_image_path.name
         # Storing result in database
         db = model.SessionLocal()
-        db_prediction = save_prediction_to_db(db, prediction_result)
+        db_prediction = save_prediction_to_db(db, prediction_result, image_str)
         db.close()
 
-        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
+        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result, "image": image_str})
     except Exception as e:
         # Return other exception details in the response
         return JSONResponse(content={"error": str(e)})
