@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[27]:
 
 
 from sklearn.model_selection import train_test_split
@@ -31,7 +31,7 @@ def load_dataset(database_path):
     return df, num_classes
 
 
-# In[2]:
+# In[28]:
 
 
 def split_dataset(df, test_size=0.2, random_state=0):
@@ -54,7 +54,7 @@ def split_dataset(df, test_size=0.2, random_state=0):
     return X_train, X_test, y_train, y_test
 
 
-# In[3]:
+# In[29]:
 
 
 def preprocess_and_print_shapes(y_train, y_test):
@@ -67,7 +67,7 @@ def preprocess_and_print_shapes(y_train, y_test):
     return y_train_categorical, y_test_categorical
 
 
-# In[4]:
+# In[30]:
 
 
 from keras.models import Sequential
@@ -91,7 +91,7 @@ def train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, y_test):
     return model
 
 
-# In[5]:
+# In[31]:
 
 
 from keras.models import Sequential
@@ -114,7 +114,7 @@ def train_model_v2(num_classes, X_train, y_train, X_test, y_test):
     return model
 
 
-# In[6]:
+# In[32]:
 
 
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
@@ -131,19 +131,15 @@ def evaluate_model(model, X_test, y_test):
 
     # Accuracy
     accuracy1 = accuracy_score(y_test, predicted_classes)
-    print("Accuracy:", accuracy1)
 
     # Precision
     precision = precision_score(y_test, predicted_classes, average='weighted')
-    print("Precision:", precision)
 
     # Recall
     recall = recall_score(y_test, predicted_classes, average='weighted')
-    print("Recall:", recall)
 
     # F1 Score
     f1 = f1_score(y_test, predicted_classes, average='weighted')
-    print("F1 Score:", f1)
 
     # Compute confusion matrix
     cm = confusion_matrix(y_test, predicted_classes)
@@ -155,14 +151,14 @@ def evaluate_model(model, X_test, y_test):
     FN = np.sum(cm, axis=1) - np.diag(cm)
 
     # Print the results
-    print("True Positives (TP):", TP)
-    print("True Negatives (TN):", TN)
-    print("False Positives (FP):", np.sum(FP))
-    print("False Negatives (FN):", np.sum(FN))
+    #print("True Positives (TP):", TP)
+    #print("True Negatives (TN):", TN)
+    #print("False Positives (FP):", np.sum(FP))
+    #print("False Negatives (FN):", np.sum(FN))
     return accuracy1, precision, recall, f1
 
 
-# In[7]:
+# In[33]:
 
 
 import matplotlib.pyplot as plt
@@ -191,11 +187,13 @@ def visualize_predictions(df, model, X_test, y_test, num_rows=5, num_cols=5, fig
     plt.show()
 
 
-# In[8]:
-
+# In[38]:
 ''''
+
 import time
-df, num_classes = load_dataset('lfw_dataset.db')
+import os
+import json
+df, num_classes = load_dataset('../lfw_augmented_dataset.db')
 X_train, X_test, y_train, y_test = split_dataset(df)
 
 y_train, y_test = preprocess_and_print_shapes(y_train, y_test)
@@ -207,24 +205,32 @@ cnn_model = train_cnn_model(input_shape, num_classes, X_train, y_train, X_test, 
 
 #Evaluate the model
 accuracy1, precision, recall, f1 = evaluate_model(cnn_model, X_test, y_test)
-print("Accuracy:", accuracy1)
-print("Precision:", precision)
-print("Recall:", recall)
-print("F1 Score:", f1)
+evaluation_metrics = {
+    "accuracy": accuracy1,
+    "precision": precision,
+    "recall": recall,
+    "f1_score": f1
+}
 
 # Save the trained model
 save_path = "./model_registry/"
 timestamp = time.strftime("%Y%m%d%H%M%S")
 cnn_model.save(f'{save_path}model_version_{timestamp}.h5')
+# when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
+# therefore, we save the evaluation metrics in a json file
+metrics_file_path = os.path.join(save_path, 'evaluation_metrics.json')
+with open(metrics_file_path, 'w') as metrics_file:
+    json.dump(evaluation_metrics, metrics_file)
 
 #visualize the model on test set
 visualize_predictions(df, cnn_model, X_test, y_test)
 
 
-# In[9]:
+# In[ ]:
 
 
 from numpy import expand_dims
+from keras.models import Model
 
 def visualize_feature_maps(model, image):
     
@@ -259,8 +265,8 @@ def visualize_feature_maps(model, image):
     plt.show()
     
 visualize_feature_maps(cnn_model, X_train[0])
-
 '''
+
 # In[ ]:
 
 
