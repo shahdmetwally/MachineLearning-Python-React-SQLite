@@ -1,24 +1,17 @@
-/*import React from 'react';
-import MyComponent from './components/MyComponent';
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
     <div>
-      <MyComponent />
-    </div>
-  );
-}
-
-export default App;*/
-import React from 'react';
-import UserHistory from './components/UserHistory';
-import UserPredict from './components/UserPredict';
-
-function App() {
-  return (
-    <div>
-      <UserPredict />
-      <UserHistory />
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
     </div>
   );
 }
