@@ -1,7 +1,7 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from pydantic import BaseModel
 import Model.server.model as model
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pathlib import Path
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+feedback_data = []
 
 
 class PredictionData(BaseModel):
@@ -65,3 +67,15 @@ def get_predictions():
     predictions = db.query(model.Prediction).all()
     db.close()
     return predictions
+
+@app.get("/get_image/{image_name}")
+async def get_image(image_name: str):
+    image_dir = Path("Model/user_images/")
+    image_path = image_dir / image_name
+
+    # Check if the image file exists
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # Return the image file as a response
+    return FileResponse(image_path, media_type="image/jpg")  # Adjust media type based on your image format
