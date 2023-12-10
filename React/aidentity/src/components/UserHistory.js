@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button } from '@mui/material';
+import { Paper } from '@mui/material';
 
 const PredictionItem = ({ prediction }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -21,33 +21,33 @@ const PredictionItem = ({ prediction }) => {
   );
 };
 
-
-
 const UserHistory = () => {
   const [predictions, setPredictions] = useState([]);
 
-  const fetchPredictions = () => {
-    axios.get('http://127.0.0.1:8000/predictions')
-      .then(response => {
-        // Set predictions
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/predictions');
         setPredictions(response.data);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error while fetching predictions:', error);
-      });
-  };
+      }
+    };
+
+    fetchPredictions();
+  }, []); // Empty array ensures useEffect runs only once (on mount)
 
   return (
-    <div>
-      <h2>User Prediction History</h2>
-      <Button
-        variant="contained" onClick={fetchPredictions} style={{ backgroundColor: '#1A353E', color: 'white' }}>Show History</Button>
-      <ul>
-        {predictions.map((prediction, index) => (
-          <PredictionItem key={index} prediction={prediction} />
-        ))}
-      </ul>
-    </div>
+    <Paper elevation={0} style={{ backgroundColor: '#1A353E', marginRight: '20px', padding: '20px' }}>
+      <h2 style={{ color: '#D9D9D9', marginBottom: '10px', textAlign: 'center' }}>History</h2>
+      <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#D9D9D9' }}>
+        <ul>
+          {predictions.map((prediction, index) => (
+            <PredictionItem key={index} prediction={prediction} />
+          ))}
+        </ul>
+      </Paper>
+    </Paper>
   );
 };
 

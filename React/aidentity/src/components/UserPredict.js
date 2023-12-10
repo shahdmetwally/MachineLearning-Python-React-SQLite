@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Button } from '@mui/material';
+import { Button, Paper } from '@mui/material';
 
 const UserPredict = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -13,7 +13,7 @@ const UserPredict = () => {
     setSelectedFile(file);
     const previewURL = URL.createObjectURL(file);
     setImagePreview(previewURL);
-    // Reset prediction and user feedback
+    // Reset prediction
     setPrediction(null);
   };
 
@@ -40,19 +40,23 @@ const UserPredict = () => {
   };
 
   return (
-    <div>
-      <h2>Make A Prediction</h2>
-      <label htmlFor="file-upload" style={{ display: 'block', marginBottom: '10px' }}>
-        <Button variant="contained"style={{ backgroundColor: '#1A353E', color: 'white' }} onClick={triggerFileInput}>Choose file
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Paper elevation={3} style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#D9D9D9' }}>
+        <h2>Make A Prediction</h2>
+        <label htmlFor="file-upload" style={{ marginBottom: '20px' }}>
+          <Button variant="contained" style={{ backgroundColor: '#1A353E', color: 'white' }} onClick={triggerFileInput}>
+            Choose file
+          </Button>
+          <input type="file" id="file-upload" onChange={handleFileChange} style={{ display: 'none' }} ref={fileInputRef} />
+        </label>
+        {imagePreview && <img src={imagePreview} alt="Selected File" style={{ maxWidth: '100%', marginTop: '10px' }} />}
+        <Button variant="contained" onClick={handlePredict} style={{ backgroundColor: '#1A353E', color: 'white', marginTop: '20px' }}>
+          Predict
         </Button>
-        <input type="file"id="file-upload"onChange={handleFileChange}style={{ display: 'none' }}ref={fileInputRef}/>
-      </label>
-      {imagePreview && <img src={imagePreview} alt="Selected File" style={{ maxWidth: '100%', marginTop: '10px' }} />}
-      <Button
-        variant="contained" onClick={handlePredict} style={{ backgroundColor: '#1A353E', color: 'white' }}>Predict</Button>
-      {prediction && (<div><p>Prediction Score: {prediction}</p></div>)}
-      </div>
-      );
+        {prediction && <div><p>Prediction: {prediction}</p></div>}
+      </Paper>
+    </div>
+  );
 };
 
 export default UserPredict;
