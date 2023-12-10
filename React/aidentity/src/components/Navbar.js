@@ -37,7 +37,7 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#1a353e" }}>
+    <AppBar position="sticky" sx={{ backgroundColor: "#1a353e" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <BurstModeIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
