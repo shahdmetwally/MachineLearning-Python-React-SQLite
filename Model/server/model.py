@@ -3,8 +3,6 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
-import sqlite3
-import pickle
 import os
 import json
 from mtcnn.mtcnn import MTCNN
@@ -41,9 +39,9 @@ engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
 SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback))
 
 class Feedback(Base2):
-    __tablename__ = "feedback"
+    __tablename__ = "faces"
 
-    id = Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    target= Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
     name = Column(String)
     image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -134,8 +132,10 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Load and split the new dataset
     df = model_v1.load_dataset(datafile_path)[0]
+    print(df['image'])
     X_new, y_new = df['image'].values, df['target'].values
     X_new = np.array([np.array(img) for img in X_new])
+    #X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
@@ -230,10 +230,12 @@ conn.commit()
 conn.close()
 
 # Example usage
-retrain('new_dataset.db')
+
 
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
 '''
+
+#retrain('retrain_dataset.db')
