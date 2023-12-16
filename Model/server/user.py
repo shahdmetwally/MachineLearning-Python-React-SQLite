@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Body
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from pydantic import BaseModel
 import Model.server.model as model
 from fastapi.responses import JSONResponse, FileResponse
@@ -18,8 +18,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-feedback_data = []
-
 
 class PredictionData(BaseModel):
     image: UploadFile
@@ -31,6 +29,12 @@ def save_prediction_to_db(db: Session, score: int, image: str):
     db.commit()
     db.refresh(db_prediction)
     return db_prediction
+def save_feedback_to_db(db: Session, name: str, image: str):
+    db_feedback = model.Feedback(name=name, image=image)
+    db.add(db_feedback)
+    db.commit()
+    db.refresh(db_feedback)
+    return db_feedback
 
 # user should be able to upload an image which should initiate a prediction 
 @app.post('/predict')
@@ -51,7 +55,7 @@ def predict(image: UploadFile = File(...)):
 
         image_str = temp_image_path.name
         # Storing result in database
-        db = model.SessionLocal()
+        db = model.SessionLocalPrediction()
         db_prediction = save_prediction_to_db(db, prediction_result, image_str)
         db.close()
 
@@ -78,4 +82,29 @@ async def get_image(image_name: str):
         raise HTTPException(status_code=404, detail="Image not found")
 
     # Return the image file as a response
-    return FileResponse(image_path, media_type="image/jpg")  # Adjust media type based on your image format
+    return FileResponse(image_path, media_type="image/jpg")
+
+@app.post('/feedback')
+def submit_feedback(
+    image: UploadFile = File(...),
+    is_correct: bool = Form(...),
+    user_name: str = Form(''),
+):
+    try:
+        image_data = image.file.read()
+        feedback_entry = {
+            "userName": user_name,
+            "is_correct": is_correct,
+            "image": image_data,
+        }
+
+        db = model.SessionLocalFeedback()
+        db_feedback = save_feedback_to_db(db, user_name, image_data)
+        db.close()
+
+        return {"message": "Feedback saved successfully"}
+    except Exception as e:
+        # Handle exceptions as needed
+        raise HTTPException(status_code=500, detail=str(e))
+
+

@@ -13,18 +13,18 @@ from contextlib import redirect_stdout
 from Model import model_v1
 from PIL import Image
 import time
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence, BLOB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 import Model.server.model_registry as model_registry
 
-DATABASE_URL = "sqlite:///./prediction_history.db"
-Base = declarative_base()
-engine = create_engine(DATABASE_URL)
-SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+DATABASE_URL_PREDICTION = "sqlite:///./prediction_history.db"
+Base1 = declarative_base()
+engine_prediction = create_engine(DATABASE_URL_PREDICTION)
+SessionLocalPrediction = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_prediction))
 
-class Prediction(Base):
+class Prediction(Base1):
     __tablename__ = "predictions"
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
@@ -32,9 +32,24 @@ class Prediction(Base):
     image = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-Base.metadata.drop_all(bind=engine)
 # Create the table in the database
-Base.metadata.create_all(bind=engine)
+Base1.metadata.create_all(bind=engine_prediction)
+
+DATABASE_URL_FEEDBACK = "sqlite:///./retrain_dataset.db"
+Base2 = declarative_base()
+engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
+SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback))
+
+class Feedback(Base2):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    name = Column(String)
+    image = Column(BLOB)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create the table in the database
+Base2.metadata.create_all(bind=engine_feedback)
 
 def preprocess_image(image):
     detector = MTCNN()
