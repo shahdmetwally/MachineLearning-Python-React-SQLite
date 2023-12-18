@@ -125,6 +125,19 @@ def predict(image_data):
     except Exception as e:
         return {"error": str(e)}
 
+# If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
+def trigger_retraining(datafile_path, threshold=10, **retrain_args):
+    df = model_v1.load_dataset(datafile_path)[0]
+
+    num_entries = len(df)
+
+    if num_entries >= threshold:
+        # Trigger retraining
+        print(f"Triggering retraining with {num_entries} entries.")
+        retrain(datafile_path, **retrain_args)
+    else:
+        print(f"Not enough entries ({num_entries}) to trigger retraining.")
+
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
@@ -187,55 +200,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
 
 ''''
-conn = sqlite3.connect('new_dataset.db')
-cursor = conn.cursor()
-cursor.execute(
-    CREATE TABLE IF NOT EXISTS faces (
-        id INTEGER PRIMARY KEY,
-        target INTEGER,
-        name TEXT NOT NULL,
-        image BLOB NOT NULL
-       )
-   )
-cursor.execute('DELETE FROM faces')
-# Assuming you have a directory with images
-image_directory = 'example_images'
-
-# Get all files in the directory
-image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
-
-# Iterate over image files
-for image_file in image_files:
-    image_path = os.path.join(image_directory, image_file)
-    
-    # Load and preprocess the image
-    img = load_img(image_path, target_size=(62, 47))
-    img_array = img_to_array(img)
-
-    # Convert the image data to bytes
-    image_data = pickle.dumps(img_array)
-
-    # Split the filename to extract target and label
-    target_name, _ = os.path.splitext(image_file)
-    name, target_str = target_name.split('_')
-
-    # Convert the target to an integer
-    target = int(target_str)
-
-    # Execute the INSERT statement
-    cursor.execute("INSERT INTO faces (target, name, image) VALUES (?, ?, ?)", (target, name, image_data))
-
-# Commit the changes and close the connection
-conn.commit()
-conn.close()
-
-# Example usage
-
-
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
 '''
 
-#retrain('retrain_dataset.db')
+# trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
+trigger_retraining('retrain_dataset.db')
