@@ -3,8 +3,6 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
-import sqlite3
-import pickle
 import os
 import json
 from mtcnn.mtcnn import MTCNN
@@ -13,18 +11,18 @@ from contextlib import redirect_stdout
 from Model import model_v1
 from PIL import Image
 import time
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence, BLOB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 import Model.server.model_registry as model_registry
 
-DATABASE_URL = "sqlite:///./prediction_history.db"
-Base = declarative_base()
-engine = create_engine(DATABASE_URL)
-SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+DATABASE_URL_PREDICTION = "sqlite:///./prediction_history.db"
+Base1 = declarative_base()
+engine_prediction = create_engine(DATABASE_URL_PREDICTION)
+SessionLocalPrediction = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_prediction))
 
-class Prediction(Base):
+class Prediction(Base1):
     __tablename__ = "predictions"
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
@@ -32,9 +30,24 @@ class Prediction(Base):
     image = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-Base.metadata.drop_all(bind=engine)
 # Create the table in the database
-Base.metadata.create_all(bind=engine)
+Base1.metadata.create_all(bind=engine_prediction)
+
+DATABASE_URL_FEEDBACK = "sqlite:///./retrain_dataset.db"
+Base2 = declarative_base()
+engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
+SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback))
+
+class Feedback(Base2):
+    __tablename__ = "faces"
+
+    target= Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    name = Column(String)
+    image = Column(BLOB)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create the table in the database
+Base2.metadata.create_all(bind=engine_feedback)
 
 def preprocess_image(image):
     detector = MTCNN()
@@ -112,6 +125,19 @@ def predict(image_data):
     except Exception as e:
         return {"error": str(e)}
 
+# If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
+def trigger_retraining(datafile_path, threshold=10, **retrain_args):
+    df = model_v1.load_dataset(datafile_path)[0]
+
+    num_entries = len(df)
+
+    if num_entries >= threshold:
+        # Trigger retraining
+        print(f"Triggering retraining with {num_entries} entries.")
+        retrain(datafile_path, **retrain_args)
+    else:
+        print(f"Not enough entries ({num_entries}) to trigger retraining.")
+
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
@@ -119,8 +145,10 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Load and split the new dataset
     df = model_v1.load_dataset(datafile_path)[0]
+    print(df['image'])
     X_new, y_new = df['image'].values, df['target'].values
     X_new = np.array([np.array(img) for img in X_new])
+    #X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
@@ -172,53 +200,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
 
 ''''
-conn = sqlite3.connect('new_dataset.db')
-cursor = conn.cursor()
-cursor.execute(
-    CREATE TABLE IF NOT EXISTS faces (
-        id INTEGER PRIMARY KEY,
-        target INTEGER,
-        name TEXT NOT NULL,
-        image BLOB NOT NULL
-       )
-   )
-cursor.execute('DELETE FROM faces')
-# Assuming you have a directory with images
-image_directory = 'example_images'
-
-# Get all files in the directory
-image_files = [f for f in os.listdir(image_directory) if f.endswith('.jpg')]
-
-# Iterate over image files
-for image_file in image_files:
-    image_path = os.path.join(image_directory, image_file)
-    
-    # Load and preprocess the image
-    img = load_img(image_path, target_size=(62, 47))
-    img_array = img_to_array(img)
-
-    # Convert the image data to bytes
-    image_data = pickle.dumps(img_array)
-
-    # Split the filename to extract target and label
-    target_name, _ = os.path.splitext(image_file)
-    name, target_str = target_name.split('_')
-
-    # Convert the target to an integer
-    target = int(target_str)
-
-    # Execute the INSERT statement
-    cursor.execute("INSERT INTO faces (target, name, image) VALUES (?, ?, ?)", (target, name, image_data))
-
-# Commit the changes and close the connection
-conn.commit()
-conn.close()
-
-# Example usage
-retrain('new_dataset.db')
-
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
 '''
+
+# trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
+trigger_retraining('retrain_dataset.db')
