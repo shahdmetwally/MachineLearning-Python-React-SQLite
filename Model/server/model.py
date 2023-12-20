@@ -3,6 +3,7 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
+from keras.applications.vgg16 import preprocess_input
 import os
 import json
 from mtcnn.mtcnn import MTCNN
@@ -82,9 +83,11 @@ def preprocess_image(image):
         # Crop the aligned face from the original image
         cropped_face = aligned_face[y:y+h, x:x+w]
 
-        resized_face = cv2.resize(cropped_face, (47, 62))
+        resized_face = cv2.resize(cropped_face, (224, 224))
 
         processed_image = resized_face
+        processed_image = preprocess_input(processed_image)
+
 
     else:
         processed_image = None
@@ -207,4 +210,4 @@ prediction_result = predict(image)
 '''
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
-trigger_retraining('retrain_dataset.db')
+#trigger_retraining('retrain_dataset.db')
