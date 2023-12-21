@@ -9,7 +9,7 @@ function Home() {
       <Paper style={{ padding: '20px', backgroundColor: '#6E99A7', marginRight: '20px', outline: 'none', marginTop: '20px', boxShadow: 'none' }}>
         <UserHistory />
       </Paper>
-      <Paper style={{ padding: '20px', backgroundColor: '#6E99A7', marginRight: '20px', outline: 'none', marginTop: '50px', boxShadow: 'none' }}>
+      <Paper style={{ padding: '20px', backgroundColor: '#6E99A7', marginRight: '20px', outline: 'none', marginTop: '20px', boxShadow: 'none' }}>
         <UserPredict />
       </Paper>
     </div>
