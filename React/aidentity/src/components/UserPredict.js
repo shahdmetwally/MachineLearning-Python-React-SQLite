@@ -7,14 +7,17 @@ const UserPredict = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const fileInputRef = useRef(null);
+  const [isPredictionCorrect, setIsPredictionCorrect] = useState(null);
+  const [userName, setUserName] = useState('');
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
     const previewURL = URL.createObjectURL(file);
     setImagePreview(previewURL);
-    // Reset prediction
     setPrediction(null);
+    setIsPredictionCorrect(null);
+    setUserName('');
   };
 
   const handlePredict = () => {
@@ -35,6 +38,31 @@ const UserPredict = () => {
       });
   };
 
+  const handleFeedback = () => {
+    if (isPredictionCorrect !== null) {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      formData.append('is_correct', isPredictionCorrect);
+
+      if (isPredictionCorrect === 'false' && userName.trim() !== '') {
+        formData.append('user_name', userName.trim());
+      }
+
+      axios.post('http://127.0.0.1:8000/feedback', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+        .then((response) => {
+          console.log(response);
+          // Handle the response as needed
+        })
+        .catch((error) => {
+          console.error('Error submitting feedback:', error);
+        });
+    }
+  };
+
   const triggerFileInput = () => {
     fileInputRef.current.click();
   };
@@ -53,10 +81,31 @@ const UserPredict = () => {
         <Button variant="contained" onClick={handlePredict} style={{ backgroundColor: '#1A353E', color: 'white', marginTop: '20px' }}>
           Predict
         </Button>
-        {prediction && <div><p>Prediction: {prediction}</p></div>}
+        {prediction && (
+        <div>
+          <p>Prediction Score: {prediction}</p>
+          <label>
+            Is the prediction correct?
+            <select onChange={(e) => setIsPredictionCorrect(e.target.value)}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          {isPredictionCorrect === 'false' && (
+            <div>
+              <label>
+                Enter your name:
+                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} />
+              </label>
+              <button onClick={handleFeedback}>Submit Feedback</button>
+            </div>
+          )}
+        </div>
+      )}
       </Paper>
-    </div>
+</div>
   );
 };
 
 export default UserPredict;
+
