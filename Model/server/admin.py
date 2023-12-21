@@ -1,10 +1,10 @@
 from fastapi import FastAPI, UploadFile
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import os
 from pathlib import Path
 import Model.server.model as model
 import Model.server.model_registry as model_registry
-import os
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
