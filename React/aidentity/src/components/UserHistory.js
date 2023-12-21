@@ -13,9 +13,15 @@ const PredictionItem = ({ prediction }) => {
   }, [prediction.image]);
 
   return (
-    <li>
-      <p>Score: {prediction.score}</p>
-      {imageLoaded && <img src={`http://127.0.0.1:8000/get_image/${prediction.image}`} alt="Prediction" style={{ maxWidth: '100%' }} />}
+    <li style={{ marginBottom: '15px' }}>
+      <p>Name: {prediction.score}</p>
+      {imageLoaded && (
+        <img
+          src={`http://127.0.0.1:8000/get_image/${prediction.image}`}
+          alt="Prediction"
+          style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain' }}
+        />
+      )}
       <p>Created At: {prediction.created_at}</p>
     </li>
   );
@@ -38,16 +44,18 @@ const UserHistory = () => {
   }, []); // Empty array ensures useEffect runs only once (on mount)
 
   return (
-    <Paper elevation={0} style={{ backgroundColor: '#1A353E', marginRight: '20px', padding: '20px' }}>
-      <h2 style={{ color: '#D9D9D9', marginBottom: '10px', textAlign: 'center' }}>History</h2>
-      <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#D9D9D9' }}>
-        <ul>
-          {predictions.map((prediction, index) => (
-            <PredictionItem key={index} prediction={prediction} />
-          ))}
-        </ul>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', maxWidth: '1000px', margin: '0 auto', marginLeft: '10px' }}>
+      <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#1A353E', width: '100%' }}>
+        <h2 style={{ color: '#D9D9D9', marginBottom: '10px', textAlign: 'center' }}>History</h2>
+        <Paper elevation={3} style={{ maxHeight: '400px', overflowY: 'auto', padding: '20px', backgroundColor: '#D9D9D9' }}>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {predictions.map((prediction, index) => (
+              <PredictionItem key={index} prediction={prediction} />
+            ))}
+          </ul>
+        </Paper>
       </Paper>
-    </Paper>
+    </div>
   );
 };
 
