@@ -47,8 +47,10 @@ const UserPredict = () => {
     const context = canvas.getContext('2d');
     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(async (blob) => {
+      const timestamp = new Date().getTime(); // Get a unique timestamp
+      const fileName = `snapshot_${timestamp}.jpg`; // Use the timestamp in the filename
       const formData = new FormData();
-      formData.append('image', blob, 'snapshot.png');
+      formData.append('image', blob, fileName);
 
       try {
         const response = await axios.post('http://127.0.0.1:8000/predict', formData, {
@@ -61,7 +63,7 @@ const UserPredict = () => {
       } catch (error) {
         console.error('Error predicting:', error);
       }
-    }, 'image/png');
+    }, 'image/jpg');
   };
 
   const handleFeedback = () => {
