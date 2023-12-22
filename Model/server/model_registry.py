@@ -42,9 +42,7 @@ def set_active_model(version):
         os.utime(active_model_path)
 
         active_model_path = active_model_path
-        return True  # Successfully set the active model
-    else:
-        return False  # Model with the specified version not found
+        return active_model_path
     
 def get_all_models():
     model_dir = 'Model/model_registry' 
@@ -63,15 +61,11 @@ def get_all_models():
 get_model_by_version('20231204092234')
 get_all_models()
 
-latest_version = '20231204092234'
-# Set the active model by specifying the version
-success = set_active_model(latest_version)
+get_latest_model_version()
 
-if success:
-    print(f"Active model set to version: {latest_version}")
-else:
-    print(f"Failed to set active model. Model with version {latest_version} not found.")
-
+set_active_model('20231204215715')
 
 get_latest_model_version()
 '''
+
+
