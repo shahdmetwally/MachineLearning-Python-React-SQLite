@@ -117,10 +117,17 @@ def predict(image_data):
 
             # Get the predicted class
             predicted_class = int(np.argmax(predictions))
+            max_confidence = np.max(predictions)
 
-            df = model_v1.load_dataset('lfw_augmented_dataset.db')[0]
-            predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
-            print(predicted_name)
+            threshold = 0.8
+            if max_confidence >= threshold:
+                df = model_v1.load_dataset('OLDlfw_augmented_dataset.db')[0]
+                predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
+                #predicted_name += " with " + str(max_confidence) + " confidence"
+                
+            else:
+                predicted_name = "Unknown"
+
         else:
             predicted_name = "No faces detected."
 
