@@ -2,30 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Paper } from '@mui/material';
 
-const PredictionItem = ({ prediction }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = `http://127.0.0.1:8000/get_image/${prediction.image}`;
-    img.onload = () => setImageLoaded(true);
-    img.onerror = (error) => console.error('Error loading image:', error);
-  }, [prediction.image]);
-
-  return (
-    <li style={{ marginBottom: '15px' }}>
-      <p>Name: {prediction.score}</p>
-      {imageLoaded && (
-        <img
-          src={`http://127.0.0.1:8000/get_image/${prediction.image}`}
-          alt="Prediction"
-          style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain' }}
-        />
-      )}
-      <p>Created At: {prediction.created_at}</p>
-    </li>
-  );
-};
 
 const UserHistory = () => {
   const [predictions, setPredictions] = useState([]);
@@ -39,7 +15,7 @@ const UserHistory = () => {
         console.error('Error while fetching predictions:', error);
       }
     };
-
+    
     fetchPredictions();
   }, []); // Empty array ensures useEffect runs only once (on mount)
 
@@ -49,8 +25,12 @@ const UserHistory = () => {
         <h2 style={{ color: '#D9D9D9', marginBottom: '10px', textAlign: 'center' }}>History</h2>
         <Paper elevation={3} style={{ maxHeight: '400px', overflowY: 'auto', padding: '20px', backgroundColor: '#D9D9D9' }}>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {predictions.map((prediction, index) => (
-              <PredictionItem key={index} prediction={prediction} />
+            {predictions.map(prediction => (
+              <li key={prediction.id} style={{ marginBottom: '20px' }}>
+                <p>Score: {prediction.score}</p>
+                <p>Created At: {prediction.created_at}</p>
+                <img src={`data:image/jpeg;base64,${prediction.image}`} alt="Prediction" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+              </li>
             ))}
           </ul>
         </Paper>

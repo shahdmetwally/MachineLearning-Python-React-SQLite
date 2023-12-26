@@ -3,7 +3,7 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
-from keras.applications.vgg16 import preprocess_input
+from keras.applications.efficientnet import preprocess_input
 import os
 import json
 from mtcnn.mtcnn import MTCNN
@@ -28,7 +28,7 @@ class Prediction(Base1):
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
     score = Column(Integer)
-    image = Column(String)
+    image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Create the table in the database
@@ -98,8 +98,8 @@ def preprocess_image(image):
 def predict(image_data):
     try:
         # Load the image and resize it to match the model's expected input shape
-        img = Image.open(image_data)
-        img_array = img_to_array(img)
+        image = cv2.imread(image_data)
+        img_array = img_to_array(image)
         processed_img = preprocess_image(img_array)
         
         if processed_img is not None:
@@ -121,7 +121,7 @@ def predict(image_data):
 
             threshold = 0.8
             if max_confidence >= threshold:
-                df = model_v1.load_dataset('OLDlfw_augmented_dataset.db')[0]
+                df = model_v1.load_dataset('lfw_augmented_dataset.db')[0]
                 predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
                 #predicted_name += " with " + str(max_confidence) + " confidence"
                 
@@ -157,8 +157,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     df = model_v1.load_dataset(datafile_path)[0]
     print(df['image'])
     X_new, y_new = df['image'].values, df['target'].values
+
+    # Resize images to (224, 224)
+    X_new = [cv2.resize(img, (224, 224)) for img in X_new]
+
     X_new = np.array([np.array(img) for img in X_new])
-    #X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
@@ -212,8 +215,8 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 ''''
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
-image = cv2.imread(image_path)
-prediction_result = predict(image)
+prediction_result = predict(image_path)
+print(prediction_result)
 '''
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model

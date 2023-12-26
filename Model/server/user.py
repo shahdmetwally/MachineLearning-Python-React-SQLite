@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from pydantic import BaseModel
 import Model.server.model as model
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pathlib import Path
 import io
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 import pickle
 from keras.preprocessing.image import img_to_array
 from PIL import Image
+import base64
+import os
 
 app = FastAPI()
 origins = ["http://localhost:3000", " http://localhost:3000/"]
@@ -26,7 +28,7 @@ class PredictionData(BaseModel):
     image: UploadFile
 
 
-def save_prediction_to_db(db: Session, score: int, image: str):
+def save_prediction_to_db(db: Session, score: int, image: bytes):
     db_prediction = model.Prediction(score=score, image=image)
     db.add(db_prediction)
     db.commit()
@@ -42,7 +44,7 @@ def save_feedback_to_db(db: Session, name: str, image: str):
 
     # Load and preprocess the image
     img = Image.open(io.BytesIO(image_data))
-    img = img.resize((62, 47))  # Resize the image to the target size
+    img = img.resize((224, 224))
     img_array = img_to_array(img)
 
     # Convert the preprocessed image data to bytes using pickle
@@ -63,18 +65,24 @@ def predict(image: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
 
         # Save the uploaded image to a temporary file
-        temp_image_path = Path(f"Model/user_images/temp_{image.filename}")
+        temp_image_path = Path("temp_image.jpg")
         with open(temp_image_path, "wb") as temp_file:
             temp_file.write(image.file.read())
-            #temp_file.close()
-        prediction_result = model.predict(temp_image_path)
-        image_str = temp_image_path.name
-        # Storing result in database
-        db = model.SessionLocalPrediction()
-        db_prediction = save_prediction_to_db(db, prediction_result, image_str)
-        db.close()
 
-        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result, "image": image_str})
+        # Read image file as bytes
+        with open(temp_image_path, "rb") as image_file:
+            image_data = image_file.read()
+
+        # Convert temp_image_path to str instead of Path object and make predictions
+        temp_image_path = str(temp_image_path)
+        prediction_result = model.predict(temp_image_path)
+
+        # Storing prediction in database
+        db = model.SessionLocalPrediction()
+        db_prediction = save_prediction_to_db(db, prediction_result, image_data)
+        db.close()
+        os.remove(temp_image_path)
+        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
     except Exception as e:
         # Return other exception details in the response
         return JSONResponse(content={"error": str(e)})
@@ -85,18 +93,24 @@ def get_predictions():
     db = model.SessionLocalPrediction()
     predictions = db.query(model.Prediction).all()
     db.close()
+
+    # Convert binary image data to base64
+    for prediction in predictions:
+        prediction.image = base64.b64encode(prediction.image).decode("utf-8")
+
     return predictions
-
+''''
 #user should be able to view the image they uploaded
-@app.get("/get_image/{image_name}")
-async def get_image(image_name: str):
-    image_dir = Path("Model/user_images/")
-    image_path = image_dir / image_name
+@app.get("/get_image/{image_id}")
+def get_image(image_id: int):
+    db = model.SessionLocalPrediction()
+    db_image = db.query(model.Prediction).filter(model.Prediction.id == image_id).first()
 
-    if not image_path.is_file():
+    if not db_image:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    return FileResponse(image_path, media_type="image/jpg")
+    return StreamingResponse(io.BytesIO(db_image.image), media_type="image/jpeg")
+'''
 
 # ask the user for feedback on the prediction's validity in order to use the false predictions for automated retraining
 @app.post('/feedback')
