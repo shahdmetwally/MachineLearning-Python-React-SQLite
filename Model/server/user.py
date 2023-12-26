@@ -42,7 +42,7 @@ def save_feedback_to_db(db: Session, name: str, image: str):
 
     # Load and preprocess the image
     img = Image.open(io.BytesIO(image_data))
-    img = img.resize((62, 47))  # Resize the image to the target size
+    img = img.resize((224, 224))
     img_array = img_to_array(img)
 
     # Convert the preprocessed image data to bytes using pickle

@@ -3,7 +3,7 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
-from keras.applications.vgg16 import preprocess_input
+from keras.applications.efficientnet import preprocess_input
 import os
 import json
 from mtcnn.mtcnn import MTCNN
@@ -157,8 +157,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     df = model_v1.load_dataset(datafile_path)[0]
     print(df['image'])
     X_new, y_new = df['image'].values, df['target'].values
+
+    # Resize images to (224, 224)
+    X_new = [cv2.resize(img, (224, 224)) for img in X_new]
+
     X_new = np.array([np.array(img) for img in X_new])
-    #X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
