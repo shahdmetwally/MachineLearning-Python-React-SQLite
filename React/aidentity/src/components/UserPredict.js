@@ -207,7 +207,7 @@ const UserPredict = () => {
         )}
         {prediction && (
           <div>
-            <p>Prediction Score: {prediction}</p>
+            <p>Prediction: {prediction}</p>
 
             {/* Feedback Options */}
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

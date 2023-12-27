@@ -26,11 +26,20 @@ const UserHistory = () => {
         <Paper elevation={3} style={{ maxHeight: '400px', overflowY: 'auto', padding: '20px', backgroundColor: '#D9D9D9' }}>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {predictions.map(prediction => (
-              <li key={prediction.id} style={{ marginBottom: '20px' }}>
-                <p>Score: {prediction.score}</p>
-                <p>Created At: {prediction.created_at}</p>
-                <img src={`data:image/jpeg;base64,${prediction.image}`} alt="Prediction" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                <li key={prediction.id} style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', height: '70px', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden'}}>
+                <div style={{ height: '70px', width: '70px'}}>
+                <img src={`data:image/jpeg;base64,${prediction.image}`} alt="Prediction" style={{ width: '70px', height: '70px', objectFit: 'cover' }} />
+                </div>
+                <div style={{ padding: '10px', fontSize: 'small'}}>
+                  <p>Prediction: {prediction.score}</p>
+                  <p>Created At: {prediction.created_at}</p>
+                </div>
+                
+                
+                </div>
               </li>
+              
             ))}
           </ul>
         </Paper>
