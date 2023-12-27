@@ -1,25 +1,22 @@
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import train_test_split
 import sqlite3
 import numpy as np
 import keras
 import pandas as pd
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-from keras.utils import to_categorical
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, GlobalAveragePooling2D, BatchNormalization
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 import pickle
 from keras.applications.vgg16 import preprocess_input
 from PIL import Image
-from keras.applications import vgg16
-from keras.callbacks import EarlyStopping
+from keras.applications import vgg16, EfficientNetV2B0
+from keras.callbacks import EarlyStopping, LearningRateScheduler
 from keras import regularizers
 import time
 import os
 import json
-from keras.models import save_model
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
 import numpy as np
 from numpy import expand_dims
@@ -115,7 +112,7 @@ class TrainModel(BaseEstimator, TransformerMixin):
         model.add(Dense(1024, activation='relu'))
         model.add(Dense(num_classes, activation='softmax'))
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=10)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=10)
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 
@@ -161,10 +158,68 @@ class TrainModelVGG16(BaseEstimator, TransformerMixin):
         model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
         early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
     
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=10, callbacks=[early_stopping])
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10, callbacks=[early_stopping])
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
-''''
+# import for efficient net preprocess_input()
+from keras.applications.efficientnet import preprocess_input
+
+class PreprocessEfficientNet(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
+
+        # One-hot encode the labels
+        y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
+        y_val_categorical = keras.utils.to_categorical(y_val, num_classes)
+        y_test_categorical = keras.utils.to_categorical(y_test, num_classes)
+
+        # Resize images to 224x224
+        X_train = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_train])
+        X_val = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_val])
+        X_test = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_test])
+
+        # Normalize the images
+        X_train = preprocess_input(X_train)
+        X_val = preprocess_input(X_val)
+        X_test = preprocess_input(X_test)
+
+        return X_train, X_val, X_test, y_train_categorical, y_val_categorical, y_test_categorical, num_classes
+    
+class TrainModelEfficientNet(BaseEstimator, TransformerMixin):    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes = X
+        efficientnet_model = EfficientNetV2B0(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+        for layer in efficientnet_model.layers[-20:]:
+            layer.trainable = False
+
+        model = Sequential()
+        model.add(efficientnet_model)
+        model.add(GlobalAveragePooling2D())
+        # Add BatchNormalization after GlobalAveragePooling2D
+        model.add(BatchNormalization())
+        model.add(Dense(512, activation='relu'))
+        model.add(Dense(num_classes, activation='softmax', kernel_regularizer=regularizers.l1_l2(0.1)))
+        def schedule(epoch, lr):
+            if epoch < 4:
+                return 0.001
+            else:
+                return 0.001 * np.exp(0.1 * (4 - epoch))
+
+        lr_scheduler = LearningRateScheduler(schedule)
+        model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
+        early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+    
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=12, batch_size=12, callbacks=[early_stopping, lr_scheduler])
+        print("Number of epochs:", len(history.history['loss']))
+        print("done")
+        return model, X_test, y_test
+    
 class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -204,7 +259,7 @@ class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
 
         plt.show()
         return model, X_test, y_test
-'''   
+
 class EvaluateModel(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -224,7 +279,7 @@ class EvaluateModel(BaseEstimator, TransformerMixin):
         print(accuracy, precision, recall, f1)
         return accuracy, precision, recall, f1, model
 
-''''
+
 pipeline_v1 = Pipeline([
     ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
     ('preprocess', Preprocess()),
@@ -232,7 +287,10 @@ pipeline_v1 = Pipeline([
     ('visualize_feature_maps', VisualizeFeatureMaps()),
     ('evaluate_model', EvaluateModel())
 ])
-'''
+# Run model_pipeline version 1 
+#pipeline_v1 = pipeline_v1.transform(None)
+#accuracy, precision, recall, f1, model  = pipeline_v1
+
 # Transfer Learning Model (VGG16)
 pipeline_v2 = Pipeline([
     ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
@@ -240,6 +298,21 @@ pipeline_v2 = Pipeline([
     ('train_model', TrainModelVGG16()),
     ('evaluate_model', EvaluateModel())
 ])
+# Run model_pipeline version 2
+#pipeline_v2 = pipeline_v2.transform(None)
+#accuracy, precision, recall, f1, model  = pipeline_v2
+
+# Transfer Learning Model (EfficientNet)
+pipeline_v3 = Pipeline([
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
+    ('preprocess', PreprocessEfficientNet()),
+    ('train_model', TrainModelEfficientNet()),
+    ('evaluate_model', EvaluateModel())
+])
+# Run model_pipeline version 3
+pipeline_v3 = pipeline_v3.transform(None)
+accuracy, precision, recall, f1, model  = pipeline_v3
+
 
 #save model
 def save_trained_model(model, accuracy, precision, recall, f1):
@@ -260,11 +333,5 @@ def save_trained_model(model, accuracy, precision, recall, f1):
     metrics_file_path = os.path.join(save_path, 'evaluation_metrics.json')
     with open(metrics_file_path, 'w') as metrics_file:
         json.dump(evaluation_metrics, metrics_file)
-
-# Run the pipeline
-#pipeline_v1 = pipeline_v1.transform(None)
-pipeline_v2 = pipeline_v2.transform(None)
-
-accuracy, precision, recall, f1, model  = pipeline_v2
 
 save_trained_model(model, accuracy, precision, recall, f1)
