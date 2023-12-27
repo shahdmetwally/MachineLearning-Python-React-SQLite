@@ -75,14 +75,14 @@ def predict(image: UploadFile = File(...)):
 
         # Convert temp_image_path to str instead of Path object and make predictions
         temp_image_path = str(temp_image_path)
-        prediction_result = model.predict(temp_image_path)
+        prediction_result, bounding_box = model.predict(temp_image_path)
 
         # Storing prediction in database
         db = model.SessionLocalPrediction()
         db_prediction = save_prediction_to_db(db, prediction_result, image_data)
         db.close()
         os.remove(temp_image_path)
-        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result})
+        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result, "box": bounding_box})
     except Exception as e:
         # Return other exception details in the response
         return JSONResponse(content={"error": str(e)})
