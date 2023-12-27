@@ -106,16 +106,61 @@ class TrainModel(BaseEstimator, TransformerMixin):
         model.add(Dense(1024, activation='relu'))
         model.add(Dense(num_classes, activation='softmax'))
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=10)
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 
+
+class PreprocessVGG16(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes = X
+
+        # One-hot encode the labels
+        y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
+        y_val_categorical = keras.utils.to_categorical(y_val, num_classes)
+        y_test_categorical = keras.utils.to_categorical(y_test, num_classes)
+
+        # Resize images to 224x224
+        X_train = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_train])
+        X_val = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_val])
+        X_test = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_test])
+
+        # Normalize the images
+        X_train = preprocess_input(X_train)
+        X_val = preprocess_input(X_val)
+        X_test = preprocess_input(X_test)
+
+        return X_train, X_val, X_test, y_train_categorical, y_val_categorical, y_test_categorical, num_classes
+class TrainModelVGG16(BaseEstimator, TransformerMixin):    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes = X
+        vgg=vgg16.VGG16(weights='imagenet', include_top=False, input_shape=(224,224,3))
+        for layer in vgg.layers:
+            layer.trainable = False
+
+        model = Sequential()
+        model.add(vgg)
+        model.add(Flatten())
+        model.add(Dense(512, activation='relu'))
+        model.add(Dense(num_classes, activation='softmax', kernel_regularizer=regularizers.l1_l2(0.1)))
+        model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
+        early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+    
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10, callbacks=[early_stopping])
+        print("Number of epochs:", len(history.history['loss']))
+        return model, X_test, y_test
+''''
 class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
     
     def transform(self, X):
-        # Assuming X is a tuple (image, label)
         model, X_test, y_test = X
         
         image = X_test[0]
@@ -149,7 +194,7 @@ class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
 
         plt.show()
         return model, X_test, y_test
-    
+ ''' 
 class EvaluateModel(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -169,13 +214,22 @@ class EvaluateModel(BaseEstimator, TransformerMixin):
         print(accuracy, precision, recall, f1)
         return accuracy, precision, recall, f1, model
 
-
-pipeline = Pipeline([
+''''
+pipeline_v1 = Pipeline([
     ('load_dataset', LoadDataset(database_path='./lfw_augmented_dataset.db')),
     ('split_dataset', SplitDataset(test_size=0.2, random_state=0)),
     ('preprocess', Preprocess()),
     ('train_model', TrainModel()),
     ('visualize_feature_maps', VisualizeFeatureMaps()),
+    ('evaluate_model', EvaluateModel())
+])
+'''
+# Transfer Learning Model (VGG16)
+pipeline_v2 = Pipeline([
+    ('load_dataset', LoadDataset(database_path='./lfw_augmented_dataset.db')),
+    ('split_dataset', SplitDataset(test_size=0.2, random_state=0)),
+    ('preprocess', PreprocessVGG16()),
+    ('train_model', TrainModelVGG16()),
     ('evaluate_model', EvaluateModel())
 ])
 
@@ -200,44 +254,9 @@ def save_trained_model(model, accuracy, precision, recall, f1):
         json.dump(evaluation_metrics, metrics_file)
 
 # Run the pipeline
-transformed_data = pipeline.transform(None)
+# pipeline_v1 = pipeline_v1.transform(None)
+pipeline_v2 = pipeline_v2.transform(None)
 
-accuracy, precision, recall, f1, model  = transformed_data
+accuracy, precision, recall, f1, model  = pipeline_v2
 
 save_trained_model(model, accuracy, precision, recall, f1)
-
-''''
-#visualize feature maps
-def visualize_feature_maps(model, image):
-    #Get indices of convolutional layers
-    conv_layer_indices = [i for i, layer in enumerate(model.layers) if isinstance(layer, Conv2D)]
-
-    #Create a list to store convolutional layers
-    conv_layers = [layer for layer in model.layers if isinstance(layer, Conv2D)]
-
-    #Create a new model containing only the convolutional layers
-    model2 = Model(inputs=model.inputs, outputs=[layer.output for layer in conv_layers])
-
-    #Expand the dimensions of the input to match the model's expected input shape
-    image = expand_dims(image, axis=0)
-
-    #Get the feature maps
-    feature_maps = model2.predict(image)
-    summed_feature_maps = [fmap_list.sum(axis=-1) for fmap_list in feature_maps]
-
-    #Plot the feature maps
-    fig = plt.figure(figsize=(15, 15))
-    layer_index = 0
-
-    for summed_fmap in summed_feature_maps:
-        ax = plt.subplot(len(conv_layers), 1, layer_index + 1)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        plt.imshow(summed_fmap[0, :, :], cmap='gray')
-
-        layer_index += 1
-
-    plt.show()
-#image = X_train[0]
-#visualize_feature_maps(model, image)
-'''
