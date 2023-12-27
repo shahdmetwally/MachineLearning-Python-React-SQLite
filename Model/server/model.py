@@ -57,12 +57,17 @@ def preprocess_image(image):
         #image = img * 255
         #image = cv2.imread(image_path)
         imageRGB = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
-        result = detector.detect_faces(imageRGB)
-
-    if result:
+        faces = detector.detect_faces(imageRGB)
+        #Only save faces that are bigger than the min_face_size
+        min_face_size = 50
+        faces = [face for face in faces if face['box'][2] > min_face_size and face['box'][3] > min_face_size]
+        
+    if faces:
+        #if there are multiple faces detected, consider the face with the largest area
+        largest_face = max(faces, key=lambda x: x['box'][2] * x['box'][3])
+        bounding_box = largest_face['box']
+        keypoints = largest_face['keypoints']
         # If faces were detected, take the first result
-        bounding_box = result[0]['box']
-        keypoints = result[0]['keypoints']
 
         # Extract the coordinates of relevant facial keypoints
         left_eye = keypoints['left_eye']
@@ -91,8 +96,9 @@ def preprocess_image(image):
 
     else:
         processed_image = None
+        bounding_box = None
 
-    return processed_image
+    return processed_image, bounding_box
 
 
 def predict(image_data):
@@ -100,7 +106,7 @@ def predict(image_data):
         # Load the image and resize it to match the model's expected input shape
         image = cv2.imread(image_data)
         img_array = img_to_array(image)
-        processed_img = preprocess_image(img_array)
+        processed_img, bounding_box = preprocess_image(img_array)
         
         if processed_img is not None:
             img_array = img_to_array(processed_img)
@@ -131,7 +137,7 @@ def predict(image_data):
         else:
             predicted_name = "No faces detected."
 
-        return predicted_name
+        return predicted_name, bounding_box
     except Exception as e:
         return {"error": str(e)}
 

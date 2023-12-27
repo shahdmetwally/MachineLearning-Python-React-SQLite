@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Paper } from '@mui/material';
 
@@ -10,7 +10,9 @@ const UserPredict = () => {
   const [isPredictionCorrect, setIsPredictionCorrect] = useState(null);
   const [userName, setUserName] = useState('');
   const [videoStream, setVideoStream] = useState(null);
+  const [boundingBox, setBoundingBox] = useState(null);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -18,11 +20,43 @@ const UserPredict = () => {
     const previewURL = URL.createObjectURL(file);
     setImagePreview(previewURL);
     setPrediction(null);
+    setBoundingBox(null);
     setIsPredictionCorrect(null);
     setUserName('');
   };
 
+
+  useEffect(() => {
+    if (imagePreview) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const image = new Image();
+      image.src = imagePreview;
+      image.onload = () => {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0);
+        
+        if (boundingBox) {
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.rect(
+            boundingBox[0],
+            boundingBox[1],
+            boundingBox[2],
+            boundingBox[3]
+          );
+          ctx.stroke();
+          ;
+        }
+      }
+
+    }
+  }, [imagePreview, boundingBox]);
+
   const handlePredictFile = () => {
+    setBoundingBox(null);
     const formData = new FormData();
     formData.append('image', selectedFile);
 
@@ -34,6 +68,7 @@ const UserPredict = () => {
       .then(response => {
         console.log(response);
         setPrediction(response.data.score);
+        setBoundingBox(response.data.box)
       })
       .catch(error => {
         console.error('Error predicting:', error);
@@ -133,7 +168,7 @@ const UserPredict = () => {
             <input type="file" id="file-upload" onChange={handleFileChange} style={{ display: 'none' }} ref={fileInputRef} />
           </label>
         )}
-        {imagePreview && <img src={imagePreview} alt="Selected File" style={{ maxWidth: '100%', marginTop: '10px' }} />}
+        <canvas ref={canvasRef} style={{ maxWidth: '100%', marginTop: '10px' }} />
         {selectedFile && (
           <Button
             variant="contained"
@@ -173,7 +208,7 @@ const UserPredict = () => {
         {prediction && (
           <div>
             <p>Prediction Score: {prediction}</p>
-            
+
             {/* Feedback Options */}
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <label>
