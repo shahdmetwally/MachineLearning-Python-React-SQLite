@@ -23,9 +23,8 @@ from numpy import expand_dims
 from keras.models import Model
 
 class LoadDataset(BaseEstimator, TransformerMixin):
-    def __init__(self, train_database_path, val_test_database_path):
+    def __init__(self, train_database_path):
         self.train_database_path = train_database_path
-        self.val_test_database_path = val_test_database_path
     
     def fit(self, X, y=None):
         return self
@@ -33,7 +32,8 @@ class LoadDataset(BaseEstimator, TransformerMixin):
     def transform(self, X):
         # Connect to the SQLite databases
         train_conn = sqlite3.connect(self.train_database_path)
-        val_test_conn = sqlite3.connect(self.val_test_database_path)
+        val_test_database_path='lfw_dataset.db'
+        val_test_conn = sqlite3.connect(val_test_database_path)
         #Get tables
         train_table='faces' 
         val_table='faces_val'
@@ -67,7 +67,7 @@ class LoadDataset(BaseEstimator, TransformerMixin):
 
         # Convert image bytes to numpy array
         num_classes = len(np.unique(train_df['target']))
-        return train_df['image'], val_df['image'], test_df['image'], train_df['target'], val_df['target'], test_df['target'], num_classes    
+        return train_df['image'], val_df['image'], test_df['image'], train_df['target'], val_df['target'], test_df['target'], num_classes, test_df    
 
 
 class Preprocess(BaseEstimator, TransformerMixin):
@@ -75,7 +75,7 @@ class Preprocess(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df= X
 
         # One-hot encode the labels
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
@@ -112,7 +112,7 @@ class TrainModel(BaseEstimator, TransformerMixin):
         model.add(Dense(1024, activation='relu'))
         model.add(Dense(num_classes, activation='softmax'))
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=10)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10)
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 
@@ -122,7 +122,7 @@ class PreprocessVGG16(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df= X
 
         # One-hot encode the labels
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
@@ -169,7 +169,7 @@ class PreprocessEfficientNet(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df= X
 
         # One-hot encode the labels
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
@@ -217,7 +217,6 @@ class TrainModelEfficientNet(BaseEstimator, TransformerMixin):
     
         history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=12, batch_size=12, callbacks=[early_stopping, lr_scheduler])
         print("Number of epochs:", len(history.history['loss']))
-        print("done")
         return model, X_test, y_test
     
 class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
@@ -276,12 +275,12 @@ class EvaluateModel(BaseEstimator, TransformerMixin):
         precision = precision_score(y_test, predicted_classes, average='weighted')
         recall = recall_score(y_test, predicted_classes, average='weighted')
         f1 = f1_score(y_test, predicted_classes, average='weighted')
-        print(accuracy, precision, recall, f1)
+        #print(accuracy, precision, recall, f1)
         return accuracy, precision, recall, f1, model
 
 
 pipeline_v1 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
     ('preprocess', Preprocess()),
     ('train_model', TrainModel()),
     ('visualize_feature_maps', VisualizeFeatureMaps()),
@@ -293,7 +292,7 @@ pipeline_v1 = Pipeline([
 
 # Transfer Learning Model (VGG16)
 pipeline_v2 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
     ('preprocess', PreprocessVGG16()),
     ('train_model', TrainModelVGG16()),
     ('evaluate_model', EvaluateModel())
@@ -304,16 +303,16 @@ pipeline_v2 = Pipeline([
 
 # Transfer Learning Model (EfficientNet)
 pipeline_v3 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
     ('preprocess', PreprocessEfficientNet()),
     ('train_model', TrainModelEfficientNet()),
     ('evaluate_model', EvaluateModel())
 ])
 # Run model_pipeline version 3
-pipeline_v3 = pipeline_v3.transform(None)
-accuracy, precision, recall, f1, model  = pipeline_v3
+#pipeline_v3 = pipeline_v3.transform(None)
+#accuracy, precision, recall, f1, model  = pipeline_v3
 
-
+''''
 #save model
 def save_trained_model(model, accuracy, precision, recall, f1):
     # Save the trained model
@@ -335,3 +334,4 @@ def save_trained_model(model, accuracy, precision, recall, f1):
         json.dump(evaluation_metrics, metrics_file)
 
 save_trained_model(model, accuracy, precision, recall, f1)
+'''

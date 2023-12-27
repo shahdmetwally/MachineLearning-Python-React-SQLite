@@ -9,7 +9,7 @@ import json
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from Model import model_v1
+from Model.model_pipeline import LoadDataset, EvaluateModel
 from PIL import Image
 import time
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence, BLOB
@@ -127,7 +127,9 @@ def predict(image_data):
 
             threshold = 0.8
             if max_confidence >= threshold:
-                df = model_v1.load_dataset('lfw_augmented_dataset.db')[0]
+                loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+                data = None
+                X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
                 predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
                 #predicted_name += " with " + str(max_confidence) + " confidence"
                 
@@ -143,7 +145,9 @@ def predict(image_data):
 
 # If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=10, **retrain_args):
-    df = model_v1.load_dataset(datafile_path)[0]
+    loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+    data = None
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
 
     num_entries = len(df)
 
@@ -154,14 +158,16 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
     else:
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
-def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
+
+def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
     model = load_model(latest_model)
 
-    # Load and split the new dataset
-    df = model_v1.load_dataset(datafile_path)[0]
-    print(df['image'])
+    # Load dataset
+    loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+    data = None
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
     X_new, y_new = df['image'].values, df['target'].values
 
     # Resize images to (224, 224)
@@ -172,10 +178,10 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-    print(X_new.shape)
-    print(y_new_categorical.shape)
 
-    accuracy, precision, recall, f1 = model_v1.evaluate_model(model, X_new, y_new)
+    evaluate = EvaluateModel()
+    og_evaluate_data = model, X_new, y_new
+    accuracy, precision, recall, f1, m = evaluate.transform(og_evaluate_data)
 
     # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
     # therefore, we save the evaluation metrics in a json file and load the data from there
@@ -201,8 +207,10 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
-    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
-    
+
+    retrained_evaluate_data = retrained_model, X_new, y_new
+    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, m = evaluate.transform(retrained_evaluate_data)
+
     print(accuracy, precision, recall, f1)
     print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
 
@@ -215,9 +223,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     else:
         print("older model is better")
         os.remove(temp_model_path)
-
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
-
 ''''
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
@@ -227,3 +233,5 @@ print(prediction_result)
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
 #trigger_retraining('retrain_dataset.db')
+
+retrain('retrain_dataset.db')
