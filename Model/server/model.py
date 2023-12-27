@@ -159,15 +159,16 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
-def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=32):
+def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
     model = load_model(latest_model)
 
-    # Load dataset
-    loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+    # Load and split the new dataset
+    loader = LoadDataset(train_database_path=datafile_path)
     data = None
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
+    print(df['image'])
     X_new, y_new = df['image'].values, df['target'].values
 
     # Resize images to (224, 224)
@@ -178,51 +179,60 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
+    print(X_new.shape)
+    print(y_new_categorical.shape)
 
-    evaluate = EvaluateModel()
-    og_evaluate_data = model, X_new, y_new
-    accuracy, precision, recall, f1, m = evaluate.transform(og_evaluate_data)
-
-    # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
-    # therefore, we save the evaluation metrics in a json file and load the data from there
-    if accuracy == 0 and precision == 0 and recall == 0 and f1 == 0:
-        metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
-        with open(metrics_file_path, 'r') as metrics_file:
-            loaded_metrics = json.load(metrics_file)
-        # Access the metrics
-        accuracy = loaded_metrics['accuracy']
-        precision = loaded_metrics['precision']
-        recall = loaded_metrics['recall']
-        f1 = loaded_metrics['f1_score']
+    # Get latest model's evaluation metrics
+    metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
+    with open(metrics_file_path, 'r') as metrics_file:
+        loaded_metrics = json.load(metrics_file)
+    # Access the metrics
+    accuracy = loaded_metrics['accuracy']
+    precision = loaded_metrics['precision']
+    recall = loaded_metrics['recall']
+    f1 = loaded_metrics['f1']
     
     # Retrain the model on the new dataset
     model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
-    temp_model_path = f'Model/model_registry/retrained_model_version_{timestamp}.h5'
-    model.save(temp_model_path)
+    retrained_model_path = "Model/model_registry/"
+    model.save(f'{retrained_model_path}model_version_{timestamp}.h5')
+
     # Load the retrained model
-    retrained_model = load_model(temp_model_path)
-    old_model = load_model(latest_model)
+    latest_model = model_registry.get_latest_model_version()
+    retrained_model = load_model(latest_model)
+
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
-
+    
+    # Evaluate retrained model
+    evaluate = EvaluateModel()
     retrained_evaluate_data = retrained_model, X_new, y_new
     retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, m = evaluate.transform(retrained_evaluate_data)
+    
+    print("old model performance: ", accuracy, precision, recall, f1)
+    print("retrained model performance: ",retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
 
-    print(accuracy, precision, recall, f1)
-    print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
-
+    # Compare retrained model's performance to the old model's performance
     if retrianed_accuracy > accuracy and retrianed_precision > precision and retrianed_recall > recall and retrianed_f1 > f1:
         print("retained model is better")
-        save_path = "Model/model_registry/"
-        timestamp = time.strftime("%Y%m%d%H%M%S")
-        retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
-        os.remove(temp_model_path)
+        # Save retrained model's evaluation metrics
+        evaluation_metrics = {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1_score": f1
+        }
+        metrics_file_path = os.path.join(retrained_model_path, 'evaluation_metrics.json')
+        with open(metrics_file_path, 'w') as metrics_file:
+            json.dump(evaluation_metrics, metrics_file)
     else:
         print("older model is better")
-        os.remove(temp_model_path)
+        # Don't save retrained model
+        os.remove(latest_model)
+
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
 ''''
 # Example usage:
