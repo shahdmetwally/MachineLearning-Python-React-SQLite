@@ -26,42 +26,51 @@ from numpy import expand_dims
 from keras.models import Model
 
 class LoadDataset(BaseEstimator, TransformerMixin):
-    def __init__(self, database_path):
-        self.database_path = database_path
+    def __init__(self, train_database_path, val_test_database_path):
+        self.train_database_path = train_database_path
+        self.val_test_database_path = val_test_database_path
     
     def fit(self, X, y=None):
         return self
     
     def transform(self, X):
-        conn = sqlite3.connect(self.database_path)
-        query = "SELECT * FROM faces"
-        df = pd.read_sql_query(query, conn)
-        df['image'] = df['image'].apply(lambda x: np.array(pickle.loads(x)))
-        conn.close()
-        return df, len(np.unique(df['target']))
+        # Connect to the SQLite databases
+        train_conn = sqlite3.connect(self.train_database_path)
+        val_test_conn = sqlite3.connect(self.val_test_database_path)
+        #Get tables
+        train_table='faces' 
+        val_table='faces_val'
+        test_table='faces_test'
 
-class SplitDataset(BaseEstimator, TransformerMixin):
-    def __init__(self, val_size=0.2, test_size=0.2, random_state=0):
-        self.val_size = val_size
-        self.test_size = test_size
-        self.random_state = random_state
-    
-    def fit(self, X, y=None):
-        return self
-    
-    def transform(self, X):
-        df, num_classes = X
-        X_train, X_temp, y_train, y_temp = train_test_split(df['image'].values, df['target'].values, test_size=(self.val_size + self.test_size), random_state=self.random_state)
+        # Query to select all records from the augmented dataset for training
+        train_query = f"SELECT * FROM {train_table}"
 
-        # Split the temp set into validation and test sets
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=(self.test_size / (self.val_size + self.test_size)), random_state=self.random_state)
+        # Fetch records from the database into a Pandas DataFrame
+        train_df = pd.read_sql_query(train_query, train_conn)
+        train_df['image'] = train_df['image'].apply(lambda x: np.array(pickle.loads(x), dtype=np.uint8))
 
-        # Print the shapes of the resulting sets
-        print("Training set shape:", X_train.shape, y_train.shape)
-        print("Validation set shape:", X_val.shape, y_val.shape)
-        print("Testing set shape:", X_test.shape, y_test.shape)
+        # Query to select all records from the validation dataset
+        val_query = f"SELECT * FROM {val_table}"
 
-        return X_train, X_val, X_test, y_train, y_val, y_test, num_classes
+        # Fetch records from the database into a Pandas DataFrame
+        val_df = pd.read_sql_query(val_query, val_test_conn)
+        val_df['image'] = val_df['image'].apply(lambda x: np.array(pickle.loads(x), dtype=np.uint8))
+
+        # Query to select all records from the test dataset
+        test_query = f"SELECT * FROM {test_table}" 
+
+        # Fetch records from the database into a Pandas DataFrame
+        test_df = pd.read_sql_query(test_query, val_test_conn)
+        test_df['image'] = test_df['image'].apply(lambda x: np.array(pickle.loads(x), dtype=np.uint8))
+
+
+        # Close the database connections
+        train_conn.close()
+        val_test_conn.close()
+
+        # Convert image bytes to numpy array
+        num_classes = len(np.unique(train_df['target']))
+        return train_df['image'], val_df['image'], test_df['image'], train_df['target'], val_df['target'], test_df['target'], num_classes    
 
 
 class Preprocess(BaseEstimator, TransformerMixin):
@@ -69,7 +78,7 @@ class Preprocess(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        X_train, X_val, X_test, y_train, y_val, y_test, num_classes = X
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
 
         # One-hot encode the labels
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
@@ -116,7 +125,7 @@ class PreprocessVGG16(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        X_train, X_val, X_test, y_train, y_val, y_test, num_classes = X
+        X_train, X_val, X_test, y_train, y_val, y_test, num_classes= X
 
         # One-hot encode the labels
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
@@ -152,7 +161,7 @@ class TrainModelVGG16(BaseEstimator, TransformerMixin):
         model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
         early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
     
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10, callbacks=[early_stopping])
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=10, callbacks=[early_stopping])
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 ''''
@@ -161,6 +170,7 @@ class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
+        # Assuming X is a tuple (image, label)
         model, X_test, y_test = X
         
         image = X_test[0]
@@ -194,7 +204,7 @@ class VisualizeFeatureMaps(BaseEstimator, TransformerMixin):
 
         plt.show()
         return model, X_test, y_test
- ''' 
+'''   
 class EvaluateModel(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -216,8 +226,7 @@ class EvaluateModel(BaseEstimator, TransformerMixin):
 
 ''''
 pipeline_v1 = Pipeline([
-    ('load_dataset', LoadDataset(database_path='./lfw_augmented_dataset.db')),
-    ('split_dataset', SplitDataset(test_size=0.2, random_state=0)),
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
     ('preprocess', Preprocess()),
     ('train_model', TrainModel()),
     ('visualize_feature_maps', VisualizeFeatureMaps()),
@@ -226,8 +235,7 @@ pipeline_v1 = Pipeline([
 '''
 # Transfer Learning Model (VGG16)
 pipeline_v2 = Pipeline([
-    ('load_dataset', LoadDataset(database_path='./lfw_augmented_dataset.db')),
-    ('split_dataset', SplitDataset(test_size=0.2, random_state=0)),
+    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db', val_test_database_path= './lfw_dataset.db')),
     ('preprocess', PreprocessVGG16()),
     ('train_model', TrainModelVGG16()),
     ('evaluate_model', EvaluateModel())
@@ -254,7 +262,7 @@ def save_trained_model(model, accuracy, precision, recall, f1):
         json.dump(evaluation_metrics, metrics_file)
 
 # Run the pipeline
-# pipeline_v1 = pipeline_v1.transform(None)
+#pipeline_v1 = pipeline_v1.transform(None)
 pipeline_v2 = pipeline_v2.transform(None)
 
 accuracy, precision, recall, f1, model  = pipeline_v2
