@@ -112,7 +112,7 @@ class TrainModel(BaseEstimator, TransformerMixin):
         model.add(Dense(1024, activation='relu'))
         model.add(Dense(num_classes, activation='softmax'))
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=10)
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 
@@ -158,7 +158,7 @@ class TrainModelVGG16(BaseEstimator, TransformerMixin):
         model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
         early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
     
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, batch_size=10, callbacks=[early_stopping])
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=20, batch_size=10, callbacks=[early_stopping])
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
 # import for efficient net preprocess_input()

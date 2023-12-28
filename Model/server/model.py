@@ -4,12 +4,18 @@ from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
 from keras.applications.efficientnet import preprocess_input
+from sklearn.model_selection import train_test_split
 import os
+import pandas as pd
+import pickle
+import sqlite3
+from keras.models import Model
+from keras.layers import Dense
 import json
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from Model.model_pipeline import LoadDataset, EvaluateModel
+from Model.model_pipeline import LoadDataset, EvaluateModel, PreprocessEfficientNet, TrainModelEfficientNet
 from PIL import Image
 import time
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence, BLOB
@@ -159,29 +165,11 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
-def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
+def retrain(datafile_path):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
     model = load_model(latest_model)
-
-    # Load and split the new dataset
-    loader = LoadDataset(train_database_path=datafile_path)
-    data = None
-    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
-    print(df['image'])
-    X_new, y_new = df['image'].values, df['target'].values
-
-    # Resize images to (224, 224)
-    X_new = [cv2.resize(img, (224, 224)) for img in X_new]
-
-    X_new = np.array([np.array(img) for img in X_new])
-    y_new = np.array(y_new)
-
-    # Preprocess the labels
-    y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-    print(X_new.shape)
-    print(y_new_categorical.shape)
-
+    
     # Get latest model's evaluation metrics
     metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
     with open(metrics_file_path, 'r') as metrics_file:
@@ -191,10 +179,36 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     precision = loaded_metrics['precision']
     recall = loaded_metrics['recall']
     f1 = loaded_metrics['f1']
-    
-    # Retrain the model on the new dataset
-    model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
 
+    # Load and split the new dataset
+    conn = sqlite3.connect(datafile_path)
+
+    # Query to select all records from the faces table
+    query = "SELECT * FROM faces"
+
+    # Fetch records from the database into a Pandas DataFrame
+    df = pd.read_sql_query(query, conn)
+    df['image'] = df['image'].apply(lambda x: np.array(pickle.loads(x)))
+    # Close the database connection
+    conn.close()
+
+    # Get the number of unique classes
+    num_classes = len(df['target'])
+    # Set values for X_train and y_train
+    X_train, y_train = df['image'].values, df['target'].values
+
+    # Split the dataset into X_train/y_train and X_temp/y_temp (which will be split into validation and test set)
+    X_train, X_temp, y_train, y_temp = train_test_split(X_train, y_train, test_size=0.4, random_state=42)
+
+    # Split the temp set into validation and test sets
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+    # Preprocess X_train and y_train
+    preprocess = PreprocessEfficientNet()
+    data = X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes = preprocess.transform(data)
+    
+    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
     retrained_model_path = "Model/model_registry/"
@@ -209,7 +223,7 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     
     # Evaluate retrained model
     evaluate = EvaluateModel()
-    retrained_evaluate_data = retrained_model, X_new, y_new
+    retrained_evaluate_data = retrained_model, X_test, y_test
     retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, m = evaluate.transform(retrained_evaluate_data)
     
     print("old model performance: ", accuracy, precision, recall, f1)
@@ -245,3 +259,23 @@ print(prediction_result)
 #trigger_retraining('retrain_dataset.db')
 
 retrain('retrain_dataset.db')
+
+
+
+''''
+    # Unfreeze the layers of old model for retraining
+    for layer in old_model.layers:
+        layer.trainable = False
+
+    # Add a new dense layer for retraining
+    x = old_model.output
+    x = Dense(128, activation='relu')(x)
+    predictions = Dense(359, activation='softmax')(x)
+
+    # Create the new model
+    new_model = Model(inputs=old_model.input, outputs=predictions)
+
+    # Retrain the model on the new dataset
+    new_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    new_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
+'''
