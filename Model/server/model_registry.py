@@ -64,8 +64,8 @@ get_all_models()
 get_latest_model_version()
 
 set_active_model('20231204215715')
-
-get_latest_model_version()
 '''
+get_latest_model_version()
+
 
 

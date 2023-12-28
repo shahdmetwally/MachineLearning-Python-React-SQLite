@@ -3,13 +3,13 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
-from keras.applications.vgg16 import preprocess_input
+from keras.applications.efficientnet import preprocess_input
 import os
 import json
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from Model import model_v1
+from Model.model_pipeline import LoadDataset, EvaluateModel
 from PIL import Image
 import time
 from sqlalchemy import (
@@ -40,7 +40,7 @@ class Prediction(Base1):
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
     score = Column(Integer)
-    image = Column(String)
+    image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -77,12 +77,21 @@ def preprocess_image(image):
         # image = img * 255
         # image = cv2.imread(image_path)
         imageRGB = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
-        result = detector.detect_faces(imageRGB)
+        faces = detector.detect_faces(imageRGB)
+        # Only save faces that are bigger than the min_face_size
+        min_face_size = 50
+        faces = [
+            face
+            for face in faces
+            if face["box"][2] > min_face_size and face["box"][3] > min_face_size
+        ]
 
-    if result:
+    if faces:
+        # if there are multiple faces detected, consider the face with the largest area
+        largest_face = max(faces, key=lambda x: x["box"][2] * x["box"][3])
+        bounding_box = largest_face["box"]
+        keypoints = largest_face["keypoints"]
         # If faces were detected, take the first result
-        bounding_box = result[0]["box"]
-        keypoints = result[0]["keypoints"]
 
         # Extract the coordinates of relevant facial keypoints
         left_eye = keypoints["left_eye"]
@@ -114,16 +123,17 @@ def preprocess_image(image):
 
     else:
         processed_image = None
+        bounding_box = None
 
-    return processed_image
+    return processed_image, bounding_box
 
 
 def predict(image_data):
     try:
         # Load the image and resize it to match the model's expected input shape
-        img = Image.open(image_data)
-        img_array = img_to_array(img)
-        processed_img = preprocess_image(img_array)
+        image = cv2.imread(image_data)
+        img_array = img_to_array(image)
+        processed_img, bounding_box = preprocess_image(img_array)
 
         if processed_img is not None:
             img_array = img_to_array(processed_img)
@@ -140,23 +150,45 @@ def predict(image_data):
 
             # Get the predicted class
             predicted_class = int(np.argmax(predictions))
+            max_confidence = np.max(predictions)
 
-            df = model_v1.load_dataset("lfw_augmented_dataset.db")[0]
-            predicted_name = df["name"][
-                np.where(df["target"].values == predicted_class)[0][0]
-            ]
-            print(predicted_name)
+            threshold = 0.8
+            if max_confidence >= threshold:
+                loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
+                data = None
+                (
+                    X_train,
+                    X_val,
+                    X_test,
+                    y_train,
+                    y_val,
+                    y_test,
+                    num_classes,
+                    df,
+                ) = loader.transform(data)
+                predicted_name = df["name"][
+                    np.where(df["target"].values == predicted_class)[0][0]
+                ]
+                # predicted_name += " with " + str(max_confidence) + " confidence"
+
+            else:
+                predicted_name = "Unknown"
+
         else:
             predicted_name = "No faces detected."
 
-        return predicted_name
+        return predicted_name, bounding_box
     except Exception as e:
         return {"error": str(e)}
 
 
 # If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=10, **retrain_args):
-    df = model_v1.load_dataset(datafile_path)[0]
+    loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
+    data = None
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
+        data
+    )
 
     num_entries = len(df)
 
@@ -168,25 +200,31 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
-def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
+def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
     model = load_model(latest_model)
 
-    # Load and split the new dataset
-    df = model_v1.load_dataset(datafile_path)[0]
-    print(df["image"])
+    # Load dataset
+    loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
+    data = None
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
+        data
+    )
     X_new, y_new = df["image"].values, df["target"].values
+
+    # Resize images to (224, 224)
+    X_new = [cv2.resize(img, (224, 224)) for img in X_new]
+
     X_new = np.array([np.array(img) for img in X_new])
-    # X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
     y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-    print(X_new.shape)
-    print(y_new_categorical.shape)
 
-    accuracy, precision, recall, f1 = model_v1.evaluate_model(model, X_new, y_new)
+    evaluate = EvaluateModel()
+    og_evaluate_data = model, X_new, y_new
+    accuracy, precision, recall, f1, m = evaluate.transform(og_evaluate_data)
 
     # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
     # therefore, we save the evaluation metrics in a json file and load the data from there
@@ -218,12 +256,15 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
+
+    retrained_evaluate_data = retrained_model, X_new, y_new
     (
         retrianed_accuracy,
         retrianed_precision,
         retrianed_recall,
         retrianed_f1,
-    ) = model_v1.evaluate_model(retrained_model, X_new, y_new)
+        m,
+    ) = evaluate.transform(retrained_evaluate_data)
 
     print(accuracy, precision, recall, f1)
     print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
@@ -242,7 +283,6 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     else:
         print("older model is better")
         os.remove(temp_model_path)
-
     return (
         retrianed_accuracy,
         retrianed_precision,
@@ -258,9 +298,11 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 """'
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
-image = cv2.imread(image_path)
-prediction_result = predict(image)
+prediction_result = predict(image_path)
+print(prediction_result)
 """
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
 # trigger_retraining('retrain_dataset.db')
+
+retrain("retrain_dataset.db")
