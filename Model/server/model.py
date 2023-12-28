@@ -33,7 +33,7 @@ class Prediction(Base1):
     __tablename__ = "predictions"
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
-    score = Column(Integer)
+    score = Column(String)
     image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -271,5 +271,4 @@ print(prediction_result)
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
 #trigger_retraining('retrain_dataset.db')
-
-retrain('retrain_dataset.db')
+#retrain('retrain_dataset.db')
