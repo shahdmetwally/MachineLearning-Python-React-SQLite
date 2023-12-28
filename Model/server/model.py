@@ -48,9 +48,9 @@ SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=F
 class Feedback(Base2):
     __tablename__ = "faces"
 
-    target= Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    target= Column(Integer, Sequence("feedback_id_seq"), index=True)
     name = Column(String)
-    image = Column(BLOB)
+    image = Column(BLOB, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Create the table in the database
