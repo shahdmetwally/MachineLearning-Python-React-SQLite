@@ -168,7 +168,7 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
 def retrain(datafile_path):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
-    model = load_model(latest_model)
+    old_model = load_model(latest_model)
     
     # Get latest model's evaluation metrics
     metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
@@ -208,11 +208,25 @@ def retrain(datafile_path):
     data = X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes = preprocess.transform(data)
     
-    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
+    # Unfreeze the layers of old model for retraining
+    for layer in old_model.layers:
+        layer.trainable = False
+
+    # Add a new dense layer for retraining
+    x = old_model.output
+    x = Dense(128, activation='relu')(x)
+    predictions = Dense(359, activation='softmax')(x)
+
+    # Create the new model
+    new_model = Model(inputs=old_model.input, outputs=predictions)
+
+    # Retrain the model on the new dataset
+    new_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    new_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
     retrained_model_path = "Model/model_registry/"
-    model.save(f'{retrained_model_path}model_version_{timestamp}.h5')
+    new_model.save(f'{retrained_model_path}model_version_{timestamp}.h5')
 
     # Load the retrained model
     latest_model = model_registry.get_latest_model_version()
@@ -259,23 +273,3 @@ print(prediction_result)
 #trigger_retraining('retrain_dataset.db')
 
 retrain('retrain_dataset.db')
-
-
-
-''''
-    # Unfreeze the layers of old model for retraining
-    for layer in old_model.layers:
-        layer.trainable = False
-
-    # Add a new dense layer for retraining
-    x = old_model.output
-    x = Dense(128, activation='relu')(x)
-    predictions = Dense(359, activation='softmax')(x)
-
-    # Create the new model
-    new_model = Model(inputs=old_model.input, outputs=predictions)
-
-    # Retrain the model on the new dataset
-    new_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    new_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
-'''
