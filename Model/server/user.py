@@ -28,7 +28,7 @@ class PredictionData(BaseModel):
     image: UploadFile
 
 
-def save_prediction_to_db(db: Session, score: int, image: bytes):
+def save_prediction_to_db(db: Session, score: str, image: bytes):
     db_prediction = model.Prediction(score=score, image=image)
     db.add(db_prediction)
     db.commit()

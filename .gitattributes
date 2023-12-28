@@ -3,3 +3,4 @@ lfw_dataset.db filter=lfs diff=lfs merge=lfs -text
 lfw_augmented_dataset.db filter=lfs diff=lfs merge=lfs -text
 model_version_20231222020334.h5 filter=lfs diff=lfs merge=lfs -text
 *.h5 filter=lfs diff=lfs merge=lfs -text
+retrain_dataset.db filter=lfs diff=lfs merge=lfs -text

@@ -4,12 +4,23 @@ from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.utils import to_categorical
 from keras.applications.efficientnet import preprocess_input
+from sklearn.model_selection import train_test_split
 import os
+import pandas as pd
+import pickle
+import sqlite3
+from keras.models import Model
+from keras.layers import Dense
 import json
 from mtcnn.mtcnn import MTCNN
 import cv2
 from contextlib import redirect_stdout
-from Model.model_pipeline import LoadDataset, EvaluateModel
+from Model.model_pipeline import (
+    LoadDataset,
+    EvaluateModel,
+    PreprocessEfficientNet,
+    TrainModelEfficientNet,
+)
 from PIL import Image
 import time
 from sqlalchemy import (
@@ -39,7 +50,7 @@ class Prediction(Base1):
     __tablename__ = "predictions"
 
     id = Column(Integer, Sequence("prediction_id_seq"), primary_key=True, index=True)
-    score = Column(Integer)
+    score = Column(String)
     image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -200,64 +211,87 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
-def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=32):
+def retrain(datafile_path):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
-    model = load_model(latest_model)
+    old_model = load_model(latest_model)
 
-    # Load dataset
-    loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
-    data = None
-    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
+    # Get latest model's evaluation metrics
+    metrics_file_path = "Model/model_registry/evaluation_metrics.json"
+    with open(metrics_file_path, "r") as metrics_file:
+        loaded_metrics = json.load(metrics_file)
+    # Access the metrics
+    accuracy = loaded_metrics["accuracy"]
+    precision = loaded_metrics["precision"]
+    recall = loaded_metrics["recall"]
+    f1 = loaded_metrics["f1"]
+
+    # Load and split the new dataset
+    conn = sqlite3.connect(datafile_path)
+
+    # Query to select all records from the faces table
+    query = "SELECT * FROM faces"
+
+    # Fetch records from the database into a Pandas DataFrame
+    df = pd.read_sql_query(query, conn)
+    df["image"] = df["image"].apply(lambda x: np.array(pickle.loads(x)))
+    # Close the database connection
+    conn.close()
+
+    # Get the number of unique classes
+    num_classes = len(df["target"])
+    # Set values for X_train and y_train
+    X_train, y_train = df["image"].values, df["target"].values
+
+    # Split the dataset into X_train/y_train and X_temp/y_temp (which will be split into validation and test set)
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X_train, y_train, test_size=0.4, random_state=42
+    )
+
+    # Split the temp set into validation and test sets
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.5, random_state=42
+    )
+
+    # Preprocess X_train and y_train
+    preprocess = PreprocessEfficientNet()
+    data = X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df
+    X_train, X_val, X_test, y_train, y_val, y_test, num_classes = preprocess.transform(
         data
     )
-    X_new, y_new = df["image"].values, df["target"].values
 
-    # Resize images to (224, 224)
-    X_new = [cv2.resize(img, (224, 224)) for img in X_new]
+    # Unfreeze the layers of old model for retraining
+    for layer in old_model.layers:
+        layer.trainable = False
 
-    X_new = np.array([np.array(img) for img in X_new])
-    y_new = np.array(y_new)
+    # Add a new dense layer for retraining
+    x = old_model.output
+    x = Dense(128, activation="relu")(x)
+    predictions = Dense(359, activation="softmax")(x)
 
-    # Preprocess the labels
-    y_new_categorical = to_categorical(y_new, num_classes=model.output_shape[1])
-
-    evaluate = EvaluateModel()
-    og_evaluate_data = model, X_new, y_new
-    accuracy, precision, recall, f1, m = evaluate.transform(og_evaluate_data)
-
-    # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
-    # therefore, we save the evaluation metrics in a json file and load the data from there
-    if accuracy == 0 and precision == 0 and recall == 0 and f1 == 0:
-        metrics_file_path = "Model/model_registry/evaluation_metrics.json"
-        with open(metrics_file_path, "r") as metrics_file:
-            loaded_metrics = json.load(metrics_file)
-        # Access the metrics
-        accuracy = loaded_metrics["accuracy"]
-        precision = loaded_metrics["precision"]
-        recall = loaded_metrics["recall"]
-        f1 = loaded_metrics["f1_score"]
+    # Create the new model
+    new_model = Model(inputs=old_model.input, outputs=predictions)
 
     # Retrain the model on the new dataset
-    model.fit(
-        X_new,
-        y_new_categorical,
-        epochs=epochs,
-        batch_size=batch_size,
-        validation_split=test_size,
+    new_model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
-
+    new_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
-    temp_model_path = f"Model/model_registry/retrained_model_version_{timestamp}.h5"
-    model.save(temp_model_path)
+    retrained_model_path = "Model/model_registry/"
+    new_model.save(f"{retrained_model_path}model_version_{timestamp}.h5")
+
     # Load the retrained model
-    retrained_model = load_model(temp_model_path)
-    old_model = load_model(latest_model)
+    latest_model = model_registry.get_latest_model_version()
+    retrained_model = load_model(latest_model)
+
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
 
-    retrained_evaluate_data = retrained_model, X_new, y_new
+    # Evaluate retrained model
+    evaluate = EvaluateModel()
+    retrained_evaluate_data = retrained_model, X_test, y_test
     (
         retrianed_accuracy,
         retrianed_precision,
@@ -266,9 +300,16 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=
         m,
     ) = evaluate.transform(retrained_evaluate_data)
 
-    print(accuracy, precision, recall, f1)
-    print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
+    print("old model performance: ", accuracy, precision, recall, f1)
+    print(
+        "retrained model performance: ",
+        retrianed_accuracy,
+        retrianed_precision,
+        retrianed_recall,
+        retrianed_f1,
+    )
 
+    # Compare retrained model's performance to the old model's performance
     if (
         retrianed_accuracy > accuracy
         and retrianed_precision > precision
@@ -276,13 +317,23 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=1, batch_size=
         and retrianed_f1 > f1
     ):
         print("retained model is better")
-        save_path = "Model/model_registry/"
-        timestamp = time.strftime("%Y%m%d%H%M%S")
-        retrained_model.save(f"{save_path}model_version_{timestamp}.h5")
-        os.remove(temp_model_path)
+        # Save retrained model's evaluation metrics
+        evaluation_metrics = {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+        }
+        metrics_file_path = os.path.join(
+            retrained_model_path, "evaluation_metrics.json"
+        )
+        with open(metrics_file_path, "w") as metrics_file:
+            json.dump(evaluation_metrics, metrics_file)
     else:
         print("older model is better")
-        os.remove(temp_model_path)
+        # Don't save retrained model
+        os.remove(latest_model)
+
     return (
         retrianed_accuracy,
         retrianed_precision,
@@ -304,5 +355,4 @@ print(prediction_result)
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
 # trigger_retraining('retrain_dataset.db')
-
-retrain("retrain_dataset.db")
+# retrain('retrain_dataset.db')
