@@ -7,7 +7,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Button from "@mui/material/Button";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -29,20 +28,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export default function CustomizedTable({
-  models,
-  headerText,
-  onSetActiveModel,
-  isAllModelsTable,
-  activeModel,
-}) {
+export default function CustomizedTable({ models, headerText }) {
   return (
     <TableContainer component={Paper} sx={{ marginBottom: "2rem" }}>
       <Table aria-label="customized table">
         <TableHead>
           <TableRow>
             <StyledTableCell>{headerText}</StyledTableCell>
-            {isAllModelsTable && <StyledTableCell>Actions</StyledTableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -51,17 +43,6 @@ export default function CustomizedTable({
               <StyledTableCell component="th" scope="row">
                 {model}
               </StyledTableCell>
-              {isAllModelsTable && (
-                <StyledTableCell>
-                  <Button
-                    variant="outlined"
-                    onClick={() => onSetActiveModel(model)}
-                    disabled={model === activeModel}
-                  >
-                    Set Active
-                  </Button>
-                </StyledTableCell>
-              )}
             </StyledTableRow>
           ))}
         </TableBody>

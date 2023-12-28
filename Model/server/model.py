@@ -12,7 +12,16 @@ from contextlib import redirect_stdout
 from Model import model_v1
 from PIL import Image
 import time
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Sequence, BLOB
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Sequence,
+    BLOB,
+    inspect,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
@@ -21,7 +30,10 @@ import Model.server.model_registry as model_registry
 DATABASE_URL_PREDICTION = "sqlite:///./prediction_history.db"
 Base1 = declarative_base()
 engine_prediction = create_engine(DATABASE_URL_PREDICTION)
-SessionLocalPrediction = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_prediction))
+SessionLocalPrediction = scoped_session(
+    sessionmaker(autocommit=False, autoflush=False, bind=engine_prediction)
+)
+
 
 class Prediction(Base1):
     __tablename__ = "predictions"
@@ -31,63 +43,74 @@ class Prediction(Base1):
     image = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# Create the table in the database
-Base1.metadata.create_all(bind=engine_prediction)
+
+# Check if the table exists
+if not inspect(engine_prediction).has_table("predictions"):
+    # Create the table if it doesn't exist
+    Base1.metadata.create_all(bind=engine_prediction)
 
 DATABASE_URL_FEEDBACK = "sqlite:///./retrain_dataset.db"
 Base2 = declarative_base()
 engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
-SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback))
+SessionLocalFeedback = scoped_session(
+    sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback)
+)
+
 
 class Feedback(Base2):
     __tablename__ = "faces"
 
-    target= Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    target = Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
     name = Column(String)
     image = Column(BLOB)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
 # Create the table in the database
 Base2.metadata.create_all(bind=engine_feedback)
+
 
 def preprocess_image(image):
     detector = MTCNN()
 
     with redirect_stdout(io.StringIO()):
-        #image = img * 255
-        #image = cv2.imread(image_path)
+        # image = img * 255
+        # image = cv2.imread(image_path)
         imageRGB = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_BGR2RGB)
         result = detector.detect_faces(imageRGB)
 
     if result:
         # If faces were detected, take the first result
-        bounding_box = result[0]['box']
-        keypoints = result[0]['keypoints']
+        bounding_box = result[0]["box"]
+        keypoints = result[0]["keypoints"]
 
         # Extract the coordinates of relevant facial keypoints
-        left_eye = keypoints['left_eye']
-        right_eye = keypoints['right_eye']
+        left_eye = keypoints["left_eye"]
+        right_eye = keypoints["right_eye"]
         # Calculate the angle of rotation for alignment
-        eyes_center = ((left_eye[0] + right_eye[0]) / 2, (left_eye[1] + right_eye[1]) / 2)
-        angle_rad = np.arctan2(
-        right_eye[1] - left_eye[1], right_eye[0] - left_eye[0])
+        eyes_center = (
+            (left_eye[0] + right_eye[0]) / 2,
+            (left_eye[1] + right_eye[1]) / 2,
+        )
+        angle_rad = np.arctan2(right_eye[1] - left_eye[1], right_eye[0] - left_eye[0])
         angle_deg = np.degrees(angle_rad)
 
         # Perform rotation and alignment
         M = cv2.getRotationMatrix2D(eyes_center, angle_deg, 1)
-        aligned_face = cv2.warpAffine(imageRGB, M, (imageRGB.shape[1], imageRGB.shape[0]))
+        aligned_face = cv2.warpAffine(
+            imageRGB, M, (imageRGB.shape[1], imageRGB.shape[0])
+        )
 
         # Extract the bounding box coordinates
         x, y, w, h = bounding_box
 
         # Crop the aligned face from the original image
-        cropped_face = aligned_face[y:y+h, x:x+w]
+        cropped_face = aligned_face[y : y + h, x : x + w]
 
         resized_face = cv2.resize(cropped_face, (224, 224))
 
         processed_image = resized_face
         processed_image = preprocess_input(processed_image)
-
 
     else:
         processed_image = None
@@ -101,7 +124,7 @@ def predict(image_data):
         img = Image.open(image_data)
         img_array = img_to_array(img)
         processed_img = preprocess_image(img_array)
-        
+
         if processed_img is not None:
             img_array = img_to_array(processed_img)
 
@@ -118,8 +141,10 @@ def predict(image_data):
             # Get the predicted class
             predicted_class = int(np.argmax(predictions))
 
-            df = model_v1.load_dataset('lfw_augmented_dataset.db')[0]
-            predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
+            df = model_v1.load_dataset("lfw_augmented_dataset.db")[0]
+            predicted_name = df["name"][
+                np.where(df["target"].values == predicted_class)[0][0]
+            ]
             print(predicted_name)
         else:
             predicted_name = "No faces detected."
@@ -127,6 +152,7 @@ def predict(image_data):
         return predicted_name
     except Exception as e:
         return {"error": str(e)}
+
 
 # If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=10, **retrain_args):
@@ -141,6 +167,7 @@ def trigger_retraining(datafile_path, threshold=10, **retrain_args):
     else:
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
+
 def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size=32):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
@@ -148,10 +175,10 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
 
     # Load and split the new dataset
     df = model_v1.load_dataset(datafile_path)[0]
-    print(df['image'])
-    X_new, y_new = df['image'].values, df['target'].values
+    print(df["image"])
+    X_new, y_new = df["image"].values, df["target"].values
     X_new = np.array([np.array(img) for img in X_new])
-    #X_new = X_new.reshape(-1, 11, 3)
+    # X_new = X_new.reshape(-1, 11, 3)
     y_new = np.array(y_new)
 
     # Preprocess the labels
@@ -164,50 +191,76 @@ def retrain(datafile_path, test_size=0.2, random_state=42, epochs=10, batch_size
     # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
     # therefore, we save the evaluation metrics in a json file and load the data from there
     if accuracy == 0 and precision == 0 and recall == 0 and f1 == 0:
-        metrics_file_path = 'Model/model_registry/evaluation_metrics.json'
-        with open(metrics_file_path, 'r') as metrics_file:
+        metrics_file_path = "Model/model_registry/evaluation_metrics.json"
+        with open(metrics_file_path, "r") as metrics_file:
             loaded_metrics = json.load(metrics_file)
         # Access the metrics
-        accuracy = loaded_metrics['accuracy']
-        precision = loaded_metrics['precision']
-        recall = loaded_metrics['recall']
-        f1 = loaded_metrics['f1_score']
-    
+        accuracy = loaded_metrics["accuracy"]
+        precision = loaded_metrics["precision"]
+        recall = loaded_metrics["recall"]
+        f1 = loaded_metrics["f1_score"]
+
     # Retrain the model on the new dataset
-    model.fit(X_new, y_new_categorical, epochs=epochs, batch_size=batch_size, validation_split=test_size)
+    model.fit(
+        X_new,
+        y_new_categorical,
+        epochs=epochs,
+        batch_size=batch_size,
+        validation_split=test_size,
+    )
 
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
-    temp_model_path = f'Model/model_registry/retrained_model_version_{timestamp}.h5'
+    temp_model_path = f"Model/model_registry/retrained_model_version_{timestamp}.h5"
     model.save(temp_model_path)
     # Load the retrained model
     retrained_model = load_model(temp_model_path)
     old_model = load_model(latest_model)
     if retrained_model is None:
         print("Error: Unable to load the retrained model.")
-    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1 = model_v1.evaluate_model(retrained_model, X_new, y_new)
-    
+    (
+        retrianed_accuracy,
+        retrianed_precision,
+        retrianed_recall,
+        retrianed_f1,
+    ) = model_v1.evaluate_model(retrained_model, X_new, y_new)
+
     print(accuracy, precision, recall, f1)
     print(retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
 
-    if retrianed_accuracy > accuracy and retrianed_precision > precision and retrianed_recall > recall and retrianed_f1 > f1:
+    if (
+        retrianed_accuracy > accuracy
+        and retrianed_precision > precision
+        and retrianed_recall > recall
+        and retrianed_f1 > f1
+    ):
         print("retained model is better")
         save_path = "Model/model_registry/"
         timestamp = time.strftime("%Y%m%d%H%M%S")
-        retrained_model.save(f'{save_path}model_version_{timestamp}.h5')
+        retrained_model.save(f"{save_path}model_version_{timestamp}.h5")
         os.remove(temp_model_path)
     else:
         print("older model is better")
         os.remove(temp_model_path)
 
-    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
+    return (
+        retrianed_accuracy,
+        retrianed_precision,
+        retrianed_recall,
+        retrianed_f1,
+        accuracy,
+        precision,
+        recall,
+        f1,
+    )
 
-''''
+
+"""'
 # Example usage:
 image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
 image = cv2.imread(image_path)
 prediction_result = predict(image)
-'''
+"""
 
 # trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
-#trigger_retraining('retrain_dataset.db')
+# trigger_retraining('retrain_dataset.db')

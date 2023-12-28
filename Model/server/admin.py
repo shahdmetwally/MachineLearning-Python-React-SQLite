@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -80,7 +80,7 @@ def get_all_models():
 
 
 @app.put("/model")
-def set_active_model(version: str):
+def set_active_model(version: str = Form("")):
     try:
         model_registry.set_active_model(version)
 
