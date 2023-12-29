@@ -1,23 +1,13 @@
-from fastapi import FastAPI, UploadFile, Form
+from fastapi import UploadFile, Form
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 import os
 from pathlib import Path
 import Model.server.model as model
 import Model.server.model_registry as model_registry
+from fastapi import APIRouter
+from app import app 
 
-app = FastAPI()
-
-origins = ["http://localhost:3000", " http://localhost:3000/"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+router = APIRouter()
 
 # Admin should upload a new batch of data and retrain the model with it
 # Then use the retrained model to get the evaluation metrics and GET them

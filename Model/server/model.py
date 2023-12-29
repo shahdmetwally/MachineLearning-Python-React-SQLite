@@ -268,9 +268,9 @@ def retrain(datafile_path):
 
     # Add a new dense layer for retraining
     x = old_model.output
-    x = Dense(128, activation="relu")(x)
+    x = Dense(128, activation="relu", name="new_dense_1")(x)
     shape = y_train.shape
-    predictions = Dense(shape[1], activation="softmax")(x)
+    predictions = Dense(shape[1], activation="softmax", name="new_dense_2")(x)
 
     # Create the new model
     new_model = Model(inputs=old_model.input, outputs=predictions)
