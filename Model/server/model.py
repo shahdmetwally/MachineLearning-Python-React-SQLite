@@ -24,7 +24,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 import Model.server.model_registry as model_registry
 
-DATABASE_URL_PREDICTION = "sqlite:///./prediction_history.db"
+DATABASE_URL_PREDICTION = "sqlite:///./Model/Datasets/prediction_history.db"
 Base1 = declarative_base()
 engine_prediction = create_engine(DATABASE_URL_PREDICTION)
 SessionLocalPrediction = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_prediction))
@@ -40,7 +40,7 @@ class Prediction(Base1):
 # Create the table in the database
 Base1.metadata.create_all(bind=engine_prediction)
 
-DATABASE_URL_FEEDBACK = "sqlite:///./retrain_dataset.db"
+DATABASE_URL_FEEDBACK = "sqlite:///./Model/Datasets/retrain_dataset.db"
 Base2 = declarative_base()
 engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
 SessionLocalFeedback = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback))
@@ -215,7 +215,8 @@ def retrain(datafile_path):
     # Add a new dense layer for retraining
     x = old_model.output
     x = Dense(128, activation='relu')(x)
-    predictions = Dense(359, activation='softmax')(x)
+    shape= y_train.shape
+    predictions = Dense(shape[1], activation='softmax')(x)
 
     # Create the new model
     new_model = Model(inputs=old_model.input, outputs=predictions)
@@ -238,14 +239,14 @@ def retrain(datafile_path):
     # Evaluate retrained model
     evaluate = EvaluateModel()
     retrained_evaluate_data = retrained_model, X_test, y_test
-    retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, m = evaluate.transform(retrained_evaluate_data)
+    retrained_accuracy, retrained_precision, retrained_recall, retrained_f1, m = evaluate.transform(retrained_evaluate_data)
     
     print("old model performance: ", accuracy, precision, recall, f1)
-    print("retrained model performance: ",retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1)
+    print("retrained model performance: ",retrained_accuracy, retrained_precision, retrained_recall, retrained_f1)
 
     # Compare retrained model's performance to the old model's performance
-    if retrianed_accuracy > accuracy and retrianed_precision > precision and retrianed_recall > recall and retrianed_f1 > f1:
-        print("retained model is better")
+    if retrained_accuracy > accuracy and retrained_precision > precision and retrained_recall > recall and retrained_f1 > f1:
+        print("retrained model is better")
         # Save retrained model's evaluation metrics
         evaluation_metrics = {
         "accuracy": accuracy,
@@ -261,4 +262,4 @@ def retrain(datafile_path):
         # Don't save retrained model
         os.remove(latest_model)
 
-    return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
+    return retrained_accuracy, retrained_precision, retrained_recall, retrained_f1, accuracy, precision, recall, f1
