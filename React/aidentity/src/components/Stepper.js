@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Stepper from "@mui/material/Stepper";
@@ -22,6 +22,7 @@ import {
   TableHead,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import axios from "axios";
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -89,6 +90,25 @@ const steps = ["Upload new data", "View Metrics"];
 const CustomizedSteppers = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [metrics, setMetrics] = useState(null);
+  const [activeModel, setActiveModel] = useState(null);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/models");
+        const { active_model: fetchedActiveModel } = response.data;
+        setActiveModel(fetchedActiveModel);
+      } catch (error) {
+        console.error("Error fetching active model:", error);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  useEffect(() => {
+    console.log("Active Model Changed:", activeModel);
+  }, [activeModel]);
 
   const handleUpload = (uploadedMetrics) => {
     setMetrics(uploadedMetrics);
@@ -102,6 +122,12 @@ const CustomizedSteppers = () => {
 
   return (
     <Stack sx={{ width: "100%", marginTop: "2rem" }} spacing={4}>
+      <Typography
+        variant="h5"
+        sx={{ fontWeight: "bold", textAlign: "center", padding: "1rem" }}
+      >
+        Current Active Model: {activeModel}
+      </Typography>
       <Stepper
         alternativeLabel
         activeStep={activeStep}
