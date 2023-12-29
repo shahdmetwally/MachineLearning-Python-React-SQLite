@@ -57,15 +57,4 @@ def get_all_models():
     else:
         return None  # No models found
     
-''''
-get_model_by_version('20231204092234')
-get_all_models()
-
-get_latest_model_version()
-
-set_active_model('20231204215715')
-'''
-get_latest_model_version()
-
-
 

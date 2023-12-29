@@ -32,7 +32,7 @@ class LoadDataset(BaseEstimator, TransformerMixin):
     def transform(self, X):
         # Connect to the SQLite databases
         train_conn = sqlite3.connect(self.train_database_path)
-        val_test_database_path='lfw_dataset.db'
+        val_test_database_path='Model/Datasets/lfw_dataset.db'
         val_test_conn = sqlite3.connect(val_test_database_path)
         #Get tables
         train_table='faces' 
@@ -280,7 +280,7 @@ class EvaluateModel(BaseEstimator, TransformerMixin):
 
 
 pipeline_v1 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='.Model/Datasets/lfw_augmented_dataset.db')),
     ('preprocess', Preprocess()),
     ('train_model', TrainModel()),
     ('visualize_feature_maps', VisualizeFeatureMaps()),
@@ -292,7 +292,7 @@ pipeline_v1 = Pipeline([
 
 # Transfer Learning Model (VGG16)
 pipeline_v2 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='.Model/Datasets/lfw_augmented_dataset.db')),
     ('preprocess', PreprocessVGG16()),
     ('train_model', TrainModelVGG16()),
     ('evaluate_model', EvaluateModel())
@@ -303,7 +303,7 @@ pipeline_v2 = Pipeline([
 
 # Transfer Learning Model (EfficientNet)
 pipeline_v3 = Pipeline([
-    ('load_dataset', LoadDataset(train_database_path='./lfw_augmented_dataset.db')),
+    ('load_dataset', LoadDataset(train_database_path='.Model/Datasets/lfw_augmented_dataset.db')),
     ('preprocess', PreprocessEfficientNet()),
     ('train_model', TrainModelEfficientNet()),
     ('evaluate_model', EvaluateModel())

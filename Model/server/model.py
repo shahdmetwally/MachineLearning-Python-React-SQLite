@@ -71,9 +71,9 @@ SessionLocalFeedback = scoped_session(
 class Feedback(Base2):
     __tablename__ = "faces"
 
-    target = Column(Integer, Sequence("feedback_id_seq"), primary_key=True, index=True)
+    target = Column(Integer, Sequence("feedback_id_seq"), index=True)
     name = Column(String)
-    image = Column(BLOB)
+    image = Column(BLOB, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -165,7 +165,9 @@ def predict(image_data):
 
             threshold = 0.8
             if max_confidence >= threshold:
-                loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
+                loader = LoadDataset(
+                    train_database_path="Model/Datasets/lfw_augmented_dataset.db"
+                )
                 data = None
                 (
                     X_train,
@@ -195,7 +197,7 @@ def predict(image_data):
 
 # If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=10, **retrain_args):
-    loader = LoadDataset(train_database_path="lfw_augmented_dataset.db")
+    loader = LoadDataset(train_database_path="Model/Datasets/lfw_augmented_dataset.db")
     data = None
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
         data
@@ -344,15 +346,3 @@ def retrain(datafile_path):
         recall,
         f1,
     )
-
-
-"""'
-# Example usage:
-image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
-prediction_result = predict(image_path)
-print(prediction_result)
-"""
-
-# trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
-# trigger_retraining('retrain_dataset.db')
-# retrain('retrain_dataset.db')
