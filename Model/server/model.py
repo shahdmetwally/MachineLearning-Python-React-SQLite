@@ -133,7 +133,7 @@ def predict(image_data):
 
             threshold = 0.8
             if max_confidence >= threshold:
-                loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+                loader = LoadDataset(train_database_path='Model/Datasets/lfw_augmented_dataset.db')
                 data = None
                 X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
                 predicted_name = df['name'][np.where(df['target'].values == predicted_class)[0][0]] 
@@ -151,7 +151,7 @@ def predict(image_data):
 
 # If retrain_dataset has 10 false predictions then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=10, **retrain_args):
-    loader = LoadDataset(train_database_path='lfw_augmented_dataset.db')
+    loader = LoadDataset(train_database_path='Model/Datasets/lfw_augmented_dataset.db')
     data = None
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(data)
 
@@ -262,13 +262,3 @@ def retrain(datafile_path):
         os.remove(latest_model)
 
     return retrianed_accuracy, retrianed_precision, retrianed_recall, retrianed_f1, accuracy, precision, recall, f1
-''''
-# Example usage:
-image_path = '/Users/shahhdhassann/monorepo/Arturo_Gatti_0002.jpg'
-prediction_result = predict(image_path)
-print(prediction_result)
-'''
-
-# trigger for retraining using retrain_dataset.db which contains the images and correct predictions of previously false predictions made by our model
-#trigger_retraining('retrain_dataset.db')
-#retrain('retrain_dataset.db')
