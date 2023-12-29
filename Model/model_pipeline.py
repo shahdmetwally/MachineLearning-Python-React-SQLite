@@ -204,7 +204,7 @@ class TrainModelEfficientNet(BaseEstimator, TransformerMixin):
         # Add BatchNormalization after GlobalAveragePooling2D
         model.add(BatchNormalization())
         model.add(Dense(512, activation='relu'))
-        model.add(Dense(num_classes, activation='softmax', kernel_regularizer=regularizers.l1_l2(0.1)))
+        model.add(Dense(num_classes, activation='softmax', kernel_regularizer=regularizers.l1_l2(0.08)))
         def schedule(epoch, lr):
             if epoch < 4:
                 return 0.001
@@ -215,7 +215,7 @@ class TrainModelEfficientNet(BaseEstimator, TransformerMixin):
         model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=['accuracy'])
         early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
     
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=12, batch_size=12, callbacks=[early_stopping, lr_scheduler])
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=12, batch_size=15, callbacks=[early_stopping, lr_scheduler])
         print("Number of epochs:", len(history.history['loss']))
         return model, X_test, y_test
     

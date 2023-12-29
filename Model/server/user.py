@@ -1,28 +1,19 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import File, UploadFile, HTTPException, Form
 from pydantic import BaseModel
 import Model.server.model as model
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from pathlib import Path
 import io
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import pickle
 from keras.preprocessing.image import img_to_array
 from PIL import Image
 import base64
 import os
+from fastapi import APIRouter
+from app import app 
 
-app = FastAPI()
-origins = ["http://localhost:3000", " http://localhost:3000/"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+router = APIRouter()
 
 class PredictionData(BaseModel):
     image: UploadFile
@@ -99,18 +90,6 @@ def get_predictions():
         prediction.image = base64.b64encode(prediction.image).decode("utf-8")
 
     return predictions
-''''
-#user should be able to view the image they uploaded
-@app.get("/get_image/{image_id}")
-def get_image(image_id: int):
-    db = model.SessionLocalPrediction()
-    db_image = db.query(model.Prediction).filter(model.Prediction.id == image_id).first()
-
-    if not db_image:
-        raise HTTPException(status_code=404, detail="Image not found")
-
-    return StreamingResponse(io.BytesIO(db_image.image), media_type="image/jpeg")
-'''
 
 # ask the user for feedback on the prediction's validity in order to use the false predictions for automated retraining
 @app.post('/feedback')
