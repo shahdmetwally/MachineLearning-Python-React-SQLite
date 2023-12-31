@@ -37,6 +37,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 import Model.server.model_registry as model_registry
+import cv2
+import imutils
+import random
 
 DATABASE_URL_PREDICTION = "sqlite:///./Model/Datasets/prediction_history.db"
 Base1 = declarative_base()
@@ -262,6 +265,96 @@ def retrain(datafile_path):
         data
     )
 
+    # Define functions for individual augmentations
+    def apply_rotation(image):
+        # Apply rotation to the image
+        imagebyte = (image).astype('uint8')
+        # Apply dynamic rotation to the original image
+        rotation_angle = random.uniform(-15, -5) if random.choice([True, False]) else random.uniform(5, 15)
+        rotated_image = imutils.rotate(imagebyte, angle=rotation_angle)
+        return rotated_image
+    
+    def apply_edge_enhancement(image):
+        # Convert the image to uint8 format
+        imagebyte = (image).astype('uint8')
+
+        # Apply Sobel filter for edge enhancement
+        sobel_x = cv2.Sobel(imagebyte, cv2.CV_64F, 1, 0, ksize=3)
+        sobel_y = cv2.Sobel(imagebyte, cv2.CV_64F, 0, 1, ksize=3)
+
+        # Combine the gradient images
+        gradient_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+
+        # Ensure the enhanced image is in the range [0, 255]
+        enhanced_image = np.clip((imagebyte + 0.25 * gradient_magnitude), 0, 255).astype(np.uint8)
+
+        return enhanced_image
+    
+    def apply_flip(image):
+        # Apply horizontal flip to the image
+        imagebyte = (image).astype('uint8')
+        return np.fliplr(imagebyte)
+
+    # Dictionary to store augmented images based on labels
+    augmented_data = {}
+
+    # Iterate over each image in X_train and apply augmentations
+    for i in range(len(X_train)):
+        image = X_train[i]
+        label = y_train[i]
+
+        # Convert label to a hashable type, e.g., tuple
+        label_key = tuple(label)
+
+        # Apply rotation
+        rotated_image = apply_rotation(image)
+
+        # Apply flip
+        flipped_image = apply_flip(image)
+
+        # Apply enhancement
+        enhanced_image = apply_edge_enhancement(image)
+
+        # Store the augmented images in the dictionary
+        if label_key not in augmented_data:
+            augmented_data[label_key] = []
+
+        augmented_data[label_key].extend([image, rotated_image, flipped_image, enhanced_image])
+
+    # Make sure all arrays contain the same number of samples
+    min_samples = min(len(samples) for samples in augmented_data.values())
+    augmented_data = {key: np.array(samples[:min_samples]) for key, samples in augmented_data.items()}      
+
+    def custom_data_generator(augmented_data, batch_size):
+        num_samples = len(list(augmented_data.values())[0])
+        num_labels = len(augmented_data)
+
+        while True:
+            # Shuffle the samples for each epoch
+            indices = np.arange(num_samples)
+            np.random.shuffle(indices)
+
+            for start in range(0, num_samples, batch_size):
+                end = min(start + batch_size, num_samples)
+                batch_indices = indices[start:end]
+
+                batch_images = []
+                batch_labels = []
+
+                for label, images in augmented_data.items():
+                    # Convert label to a hashable type, e.g., tuple
+                    label_key = tuple(label)
+                    label_images = images[batch_indices]
+                    batch_images.append(label_images)
+                    batch_labels.extend([label_key] * len(label_images))
+
+                yield np.concatenate(batch_images), np.array(batch_labels)
+
+    total_samples = len(X_train)  # Replace with the actual size of your training dataset
+    batch_size = 12  # Replace with your batch size
+    total_steps = total_samples // batch_size
+    train_generator = custom_data_generator(augmented_data, batch_size)
+
     # Unfreeze the layers of old model for retraining
     for layer in old_model.layers:
         layer.trainable = False
@@ -279,7 +372,7 @@ def retrain(datafile_path):
     new_model.compile(
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
-    new_model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
+    new_model.fit(train_generator, epochs=7, batch_size=35, validation_data=(X_val, y_val), steps_per_epoch=total_steps)
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
     retrained_model_path = "Model/model_registry/"
