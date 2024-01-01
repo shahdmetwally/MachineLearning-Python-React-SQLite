@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aidentity-deployment
+  name: aidentity-app
 spec:
   replicas: 1
   selector:
@@ -15,5 +15,7 @@ spec:
         service: app
     spec:
       containers:
-        - name: aidentity
+        - name: aidentity-app
           image: europe-west4-docker.pkg.dev/aidentity-1/monorepo/aidentity:v1
+          ports:
+            - containerPort: 8080

@@ -6,7 +6,7 @@ metadata:
 spec:
   defaultBackend:
     service:
-      name: backend-service
+      name: aidentity-server
       port:
         number: 80
 status:

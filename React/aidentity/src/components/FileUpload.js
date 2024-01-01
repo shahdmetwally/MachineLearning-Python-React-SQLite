@@ -23,7 +23,7 @@ const FileUpload = ({ onUpload }) => {
       formData.append("db_file", file);
 
       const response = await axios.post(
-        "http://localhost:8000/retrain",
+        process.env.REACT_APP_SERVER_ENDPOINT + "/retrain",
         formData,
         {
           headers: {
@@ -87,3 +87,5 @@ const FileUpload = ({ onUpload }) => {
 };
 
 export default FileUpload;
+
+//xotwod
