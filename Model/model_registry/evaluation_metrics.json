@@ -1,1 +1,1 @@
-{"model": "Model/model_registry/model_version_20240101173704.h5", "accuracy": 0.8127167630057803, "precision": 0.7932769098045729, "recall": 0.8127167630057803, "f1": 0.7877747335318951}
+{"model": "Model/model_registry/model_version_20240101183109.h5", "accuracy": 0.8708609271523179, "precision": 0.8210506919539725, "recall": 0.8708609271523179, "f1": 0.8379103236719131}

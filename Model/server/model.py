@@ -398,20 +398,23 @@ def retrain(datafile_path):
     for layer in old_model.layers:
         layer.trainable = False
 
-    # Add a new dense layer for retraining
+    # Add a new layers for retraining using the old model layers
     x = old_model.output
     x = Dense(128, activation="relu", name="new_dense_1")(x)
+    x = Reshape((1, 1, 128))(x)
+    x = GlobalAveragePooling2D(name="new_pooling")(x)
+    x = BatchNormalization(name="new")(x)
     shape = y_train.shape
     predictions = Dense(shape[1], activation="softmax", name="new_dense")(x)
 
     # Create the new model
     new_model = Model(inputs=old_model.input, outputs=predictions)
 
-    # Retrain the model on the new dataset
-    new_model.compile(
-        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
-    )
-    new_model.fit(X_train, y_train, epochs=7, batch_size=35, validation_data=(X_val, y_val), steps_per_epoch=total_steps)
+    new_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+
+    # Fit the model with the updated input shape
+    new_model.fit(augmented_X_train, augmented_y_train, epochs=7, batch_size=5, validation_data=(X_val, y_val))
+    
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
     retrained_model_path = "Model/model_registry/"
@@ -454,10 +457,11 @@ def retrain(datafile_path):
         print("retrained model is better")
         # Save retrained model's evaluation metrics
         evaluation_metrics = {
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1,
+            "model": latest_model,
+            "accuracy": retrained_accuracy,
+            "precision": retrained_precision,
+            "recall": retrained_recall,
+            "f1": retrained_f1,
         }
         metrics_file_path = os.path.join(
             retrained_model_path, "evaluation_metrics.json"
