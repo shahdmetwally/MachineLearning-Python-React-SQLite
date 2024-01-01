@@ -398,14 +398,17 @@ def retrain(datafile_path):
     for layer in old_model.layers:
         layer.trainable = False
 
+    # Get current time as a string to name the layers uniquely 
+    current_time = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
     # Add a new layers for retraining using the old model layers
     x = old_model.output
-    x = Dense(128, activation="relu", name="new_dense_1")(x)
+    x = Dense(128, activation="relu", name="new_dense_1" + current_time)(x)
     x = Reshape((1, 1, 128))(x)
-    x = GlobalAveragePooling2D(name="new_pooling")(x)
-    x = BatchNormalization(name="new")(x)
+    x = GlobalAveragePooling2D(name="new_pooling_" + current_time)(x)
+    x = BatchNormalization(name="new_" + current_time)(x)
     shape = y_train.shape
-    predictions = Dense(shape[1], activation="softmax", name="new_dense")(x)
+    predictions = Dense(shape[1], activation="softmax", name="new_dense_2" + current_time)(x)
 
     # Create the new model
     new_model = Model(inputs=old_model.input, outputs=predictions)
@@ -414,7 +417,7 @@ def retrain(datafile_path):
 
     # Fit the model with the updated input shape
     new_model.fit(augmented_X_train, augmented_y_train, epochs=7, batch_size=5, validation_data=(X_val, y_val))
-    
+
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
     retrained_model_path = "Model/model_registry/"
