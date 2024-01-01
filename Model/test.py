@@ -1,9 +1,11 @@
 import unittest
+import numpy as np
 from sklearn.pipeline import Pipeline
 from keras.models import Sequential
 from model_pipeline import LoadDataset, Preprocess, TrainModel, VisualizeFeatureMaps, EvaluateModel
 from model_pipeline import PreprocessVGG16, TrainModelVGG16
 from model_pipeline import PreprocessEfficientNet, TrainModelEfficientNet
+from server.model import predict
 
 class TestDataset(unittest.TestCase):
     def test_load_dataset(self):
@@ -80,6 +82,14 @@ class TestPipelines(unittest.TestCase):
         assert f1 < 1
         self.assertIsInstance(model, Sequential)
         self.assertTrue(hasattr(model, 'layers') and len(model.layers) == num_of_layers) 
+
+
+class TestPrediction(unittest.TestCase):
+    def test_predict(self):
+        # image that that doesn't match the required size for the model for testing
+        dummy_image = np.random.randint(0, 255, size=(100, 100, 3), dtype=np.uint8) 
+        predicted_name = predict(dummy_image)
+        self.assertIsNotNone(predicted_name)
 
 
 if __name__ == '__main__':
