@@ -39,6 +39,7 @@ import cv2
 import imutils
 import random
 
+# Create database to save all of the model's predictions
 DATABASE_URL_PREDICTION = "sqlite:///./Model/Datasets/prediction_history.db"
 Base1 = declarative_base()
 engine_prediction = create_engine(DATABASE_URL_PREDICTION)
@@ -61,13 +62,13 @@ if not inspect(engine_prediction).has_table("predictions"):
     # Create the table if it doesn't exist
     Base1.metadata.create_all(bind=engine_prediction)
 
+# Create database for retraining to save the user's feedback
 DATABASE_URL_FEEDBACK = "sqlite:///./Model/Datasets/retrain_dataset.db"
 Base2 = declarative_base()
 engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
 SessionLocalFeedback = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback)
 )
-
 
 class Feedback(Base2):
     __tablename__ = "faces"
@@ -77,9 +78,10 @@ class Feedback(Base2):
     image = Column(BLOB, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-
-# Create the table in the database
-Base2.metadata.create_all(bind=engine_feedback)
+# Check if the table exists
+if not inspect(engine_prediction).has_table("faces"):
+    # Create the table if it doesn't exist
+    Base2.metadata.create_all(bind=engine_feedback)
 
 
 def preprocess_image(image):
@@ -198,11 +200,19 @@ def predict(image_data):
 
 # If retrain_dataset has 200 targets then initiate retraining (change threshold value if more than 10 makes more sense)
 def trigger_retraining(datafile_path, threshold=200, **retrain_args):
-    loader = LoadDataset(train_database_path="Model/Datasets/lfw_augmented_dataset.db")
-    data = None
-    X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
-        data
-    )
+    # Load and split the retraining dataset
+    conn = sqlite3.connect(datafile_path)
+
+    # Query to select all records from the faces table
+    query = "SELECT * FROM faces"
+
+    # Fetch records from the database into a Pandas DataFrame
+    df = pd.read_sql_query(query, conn)
+    # Close the database connection
+    conn.close()
+    
+    # Set values for X_train and y_train
+    y_train = df["target"].values
 
     num_entries = len(np.unique(y_train))
 
