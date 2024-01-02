@@ -164,10 +164,10 @@ def predict(image_data):
             predicted_class = int(np.argmax(predictions))
             max_confidence = np.max(predictions)
 
-            threshold = 0.0
+            threshold = 0.8
             if max_confidence >= threshold:
                 loader = LoadDataset(
-                    train_database_path="Model/Datasets/lfw_augmented_dataset.db"
+                    train_database_path="Model/Datasets/retrain_dataset.db"
                 )
                 data = None
                 (
@@ -196,8 +196,8 @@ def predict(image_data):
         return {"error": str(e)}
 
 
-# If retrain_dataset has 158 targets then initiate retraining (change threshold value if more than 10 makes more sense)
-def trigger_retraining(datafile_path, threshold=158, **retrain_args):
+# If retrain_dataset has 200 targets then initiate retraining (change threshold value if more than 10 makes more sense)
+def trigger_retraining(datafile_path, threshold=200, **retrain_args):
     loader = LoadDataset(train_database_path="Model/Datasets/lfw_augmented_dataset.db")
     data = None
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df = loader.transform(
@@ -260,7 +260,7 @@ def retrain(datafile_path):
         X_temp, y_temp, test_size=0.5, random_state=42
     )
 
-    # Preprocess X_train and y_train
+    # Preprocess the data
     preprocess = PreprocessEfficientNet()
     data = X_train, X_val, X_test, y_train, y_val, y_test, num_classes, df
     X_train, X_val, X_test, y_train, y_val, y_test, num_classes = preprocess.transform(
@@ -391,8 +391,14 @@ def retrain(datafile_path):
     augmented_X_train = np.array(augmented_X_train)
     augmented_y_train = np.array(augmented_y_train)
 
+    #Save X_test and y_test to have the X_train and y_train that are not augmented
     X_test = np.concatenate([X_train, X_test])
     y_test =  np.concatenate([y_train, y_test])
+
+    #Split the new X_test and y_test images 50% for testing data and the validation data
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_test, y_test, test_size=0.5, random_state=42
+    )
    
     # Unfreeze the layers of old model for retraining
     for layer in old_model.layers:
@@ -485,3 +491,5 @@ def retrain(datafile_path):
         recall,
         f1,
     )
+
+trigger_retraining('./Model/Datasets/retrain_dataset.db')
