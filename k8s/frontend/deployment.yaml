@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aidentity-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aidentity
+      service: app
+  template:
+    metadata:
+      labels:
+        app: aidentity
+        service: app
+    spec:
+      containers:
+        - name: aidentity
+          image: europe-west4-docker.pkg.dev/aidentity-1/monorepo/aidentity:v1

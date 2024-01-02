@@ -1,0 +1,17 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.file {
+  padding: 0;
+}
+
+.upload {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a353e;
+}

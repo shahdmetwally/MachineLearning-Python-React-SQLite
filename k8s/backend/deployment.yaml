@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      service: server
+  template:
+    metadata:
+      labels:
+        app: backend
+        service: server
+    spec:
+      containers:
+        - name: backend
+          image: europe-west4-docker.pkg.dev/aidentity-1/monorepo/backend:v1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10
