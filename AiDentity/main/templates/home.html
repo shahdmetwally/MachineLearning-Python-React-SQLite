@@ -20,20 +20,42 @@
       <div class="left">
         <h1>History</h1>
         <div class="left-inner">
-          <h2>bob</h2>
+          {% for prediction in predictions %}
+          <div class="history-entry">
+            <div class="entry-content">
+              <h3>{{ prediction.name }}</h3>
+              <img src="{{ prediction.image.url }}" alt="Predicted Image" />
+            </div>
+          </div>
+          {% endfor %}
         </div>
       </div>
 
       <div class="middle">
-        <form action="" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
+        <form action="#" method="POST" enctype="multipart/form-data">
+          {% csrf_token %} {{ form.as_table }}
+          <!-- Image preview -->
+          <div id="image-preview-container">
+            <img
+              id="image-preview"
+              src="#"
+              alt="Image Preview"
+              style="display: none"
+            />
+            <p id="waiting-message">Waiting for an image ...</p>
+          </div>
+
+          <!-- Static JS file -->
+          <script src="{% static 'js/home.js' %}"></script>
+
           <label for="file-upload" class="button">
-            Upload a file
+            Predict
             <input
-              type="file"
+              type="submit"
               id="file-upload"
               name="upload"
               style="display: none"
+              required
             />
           </label>
           <!--<button class="button">Use Camera</button>-->
@@ -43,7 +65,7 @@
       <div class="right">
         <h1>Status</h1>
         <div class="right-inner">
-          <h2>bob</h2>
+          <h2>{{ name }}</h2>
         </div>
       </div>
     </div>
