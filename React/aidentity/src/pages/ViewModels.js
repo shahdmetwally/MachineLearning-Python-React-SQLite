@@ -10,7 +10,9 @@ const ViewModels = () => {
 
   const fetchModels = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/models");
+      const response = await axios.get(
+        process.env.REACT_APP_SERVER_ENDPOINT + "/models"
+      );
       const { models, active_model: activeModel } = response.data;
       setModels(models);
       setActiveModel(activeModel);
@@ -28,7 +30,7 @@ const ViewModels = () => {
     formData.append("version", versionInput);
     try {
       const response = await axios.put(
-        "http://127.0.0.1:8000/model",
+        process.env.REACT_APP_SERVER_ENDPOINT + "/model",
         formData,
         {
           headers: {

@@ -5,9 +5,10 @@ from pathlib import Path
 import Model.server.model as model
 import Model.server.model_registry as model_registry
 from fastapi import APIRouter
-from app import app 
+from .app import app
 
 router = APIRouter()
+
 
 # Admin should upload a new batch of data and retrain the model with it
 # Then use the retrained model to get the evaluation metrics and GET them
@@ -81,3 +82,8 @@ def set_active_model(version: str = Form("")):
         )
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/healthz", status_code=200)
+def read_health():
+    return {"status": "ok"}

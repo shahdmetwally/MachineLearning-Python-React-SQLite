@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import { Button, Paper } from '@mui/material';
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { Button, Paper } from "@mui/material";
 
 const UserPredict = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -9,7 +9,7 @@ const UserPredict = () => {
   const [prediction, setPrediction] = useState(null);
   const fileInputRef = useRef(null);
   const [isPredictionCorrect, setIsPredictionCorrect] = useState(null);
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState("");
   const [videoStream, setVideoStream] = useState(null);
   const [boundingBox, setBoundingBox] = useState(null);
   const videoRef = useRef(null);
@@ -23,23 +23,22 @@ const UserPredict = () => {
     setPrediction(null);
     setBoundingBox(null);
     setIsPredictionCorrect(null);
-    setUserName('');
+    setUserName("");
   };
-
 
   useEffect(() => {
     if (imagePreview) {
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       const image = new Image();
       image.src = imagePreview;
       image.onload = () => {
         canvas.width = image.width;
         canvas.height = image.height;
         ctx.drawImage(image, 0, 0);
-        
+
         if (boundingBox) {
-          ctx.strokeStyle = 'red';
+          ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.rect(
@@ -49,10 +48,8 @@ const UserPredict = () => {
             boundingBox[3]
           );
           ctx.stroke();
-          ;
         }
-      }
-
+      };
     }
   }, [imagePreview, boundingBox]);
 
@@ -73,8 +70,8 @@ const UserPredict = () => {
         // Save the blob directly in the state for feedback
         response.data.blob && setBlobForFeedback(response.data.blob);
       })
-      .catch(error => {
-        console.error('Error predicting:', error);
+      .catch((error) => {
+        console.error("Error predicting:", error);
       });
   };
   
@@ -168,7 +165,7 @@ const UserPredict = () => {
       setVideoStream(stream);
       videoRef.current.srcObject = stream;
     } catch (error) {
-      console.error('Error accessing camera:', error);
+      console.error("Error accessing camera:", error);
     }
   };
 
@@ -188,25 +185,58 @@ const UserPredict = () => {
     }
   };
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Paper elevation={3} style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#D9D9D9' }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <Paper
+        elevation={3}
+        style={{
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          backgroundColor: "#D9D9D9",
+        }}
+      >
         <h2>Make A Prediction</h2>
 
         {/* Option 1: Upload File */}
-        {(!videoStream || selectedFile) && (  // Only show if camera is not started or a file is not selected
-          <label htmlFor="file-upload" style={{ marginBottom: '20px' }}>
-            <Button variant="contained" style={{ backgroundColor: '#1A353E', color: 'white' }} onClick={triggerFileInput}>
+        {(!videoStream || selectedFile) && ( // Only show if camera is not started or a file is not selected
+          <label htmlFor="file-upload" style={{ marginBottom: "20px" }}>
+            <Button
+              variant="contained"
+              style={{ backgroundColor: "#1A353E", color: "white" }}
+              onClick={triggerFileInput}
+            >
               Choose file
             </Button>
-            <input type="file" id="file-upload" onChange={handleFileChange} style={{ display: 'none' }} ref={fileInputRef} />
+            <input
+              type="file"
+              id="file-upload"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+              ref={fileInputRef}
+            />
           </label>
         )}
-        <canvas ref={canvasRef} style={{ maxWidth: '100%', marginTop: '10px' }} />
+        <canvas
+          ref={canvasRef}
+          style={{ maxWidth: "100%", marginTop: "10px" }}
+        />
         {selectedFile && (
           <Button
             variant="contained"
             onClick={handlePredictFile}
-            style={{ backgroundColor: '#1A353E', color: 'white', marginTop: '20px' }}
+            style={{
+              backgroundColor: "#1A353E",
+              color: "white",
+              marginTop: "20px",
+            }}
           >
             Predict from File
           </Button>
@@ -217,21 +247,33 @@ const UserPredict = () => {
           <>
             <video
               ref={videoRef}
-              style={{ maxWidth: '100%', marginTop: '10px', display: videoStream ? 'block' : 'none' }}
+              style={{
+                maxWidth: "100%",
+                marginTop: "10px",
+                display: videoStream ? "block" : "none",
+              }}
               autoPlay
             ></video>
             <Button
               variant="contained"
               onClick={toggleCamera}
-              style={{ backgroundColor: '#1A353E', color: 'white', marginTop: '20px' }}
+              style={{
+                backgroundColor: "#1A353E",
+                color: "white",
+                marginTop: "20px",
+              }}
             >
-              {videoStream ? 'Stop Camera' : 'Start Camera'}
+              {videoStream ? "Stop Camera" : "Start Camera"}
             </Button>
             {videoStream && (
               <Button
                 variant="contained"
                 onClick={handlePredictCamera}
-                style={{ backgroundColor: '#1A353E', color: 'white', marginTop: '20px' }}
+                style={{
+                  backgroundColor: "#1A353E",
+                  color: "white",
+                  marginTop: "20px",
+                }}
               >
                 Predict from Camera
               </Button>
@@ -243,32 +285,62 @@ const UserPredict = () => {
             <p>Prediction: {prediction}</p>
 
             {/* Feedback Options */}
-            <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <label>
-                Is the prediction correct?
-              </label>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+            <div
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <label>Is the prediction correct?</label>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "10px",
+                }}
+              >
                 <label>
-                  <input type="radio" value="true" checked={isPredictionCorrect === 'true'} onChange={() => setIsPredictionCorrect('true')} />
+                  <input
+                    type="radio"
+                    value="true"
+                    checked={isPredictionCorrect === "true"}
+                    onChange={() => setIsPredictionCorrect("true")}
+                  />
                   Yes
                 </label>
                 <label>
-                  <input type="radio" value="false" checked={isPredictionCorrect === 'false'} onChange={() => setIsPredictionCorrect('false')} />
+                  <input
+                    type="radio"
+                    value="false"
+                    checked={isPredictionCorrect === "false"}
+                    onChange={() => setIsPredictionCorrect("false")}
+                  />
                   No
                 </label>
               </div>
             </div>
 
-            {isPredictionCorrect === 'true' && (
-              window.location.reload()
-            )}
-            {isPredictionCorrect === 'false' && (
-              <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {isPredictionCorrect === "true" && window.location.reload()}
+            {isPredictionCorrect === "false" && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
                 <label>
                   Enter your name:
-                  <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} />
+                  <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                  />
                 </label>
-                <button onClick={handleFeedback} style={{ marginTop: '10px' }}>
+                <button onClick={handleFeedback} style={{ marginTop: "10px" }}>
                   Submit Feedback
                 </button>
               </div>

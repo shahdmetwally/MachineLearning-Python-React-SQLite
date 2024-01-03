@@ -15,5 +15,5 @@ FROM node:lts-alpine
 WORKDIR /app
 COPY --from=builder /app/build .
 RUN npm install -g http-server
-EXPOSE 3000
-CMD ["http-server", "-p", "3000", "--cors"]
+EXPOSE 8080
+CMD ["http-server", "-p", "8080", "--cors"]
