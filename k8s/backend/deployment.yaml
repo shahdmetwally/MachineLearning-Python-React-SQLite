@@ -1,25 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
+  name: aidentity-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: aidentity
       service: server
   template:
     metadata:
       labels:
-        app: backend
+        app: aidentity
         service: server
     spec:
       containers:
-        - name: backend
+        - name: aidentity-server
           image: europe-west4-docker.pkg.dev/aidentity-1/monorepo/backend:v1
+          ports:
+            - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 40
+            periodSeconds: 6
+            timeoutSeconds: 2
+            failureThreshold: 60
           livenessProbe:
             httpGet:
-              path: /
-              port: 8000
+              path: /healthz
+              port: 80
             initialDelaySeconds: 60
-            periodSeconds: 10
+            periodSeconds: 5

@@ -128,7 +128,6 @@ class PreprocessVGG16(BaseEstimator, TransformerMixin):
         y_train_categorical = keras.utils.to_categorical(y_train, num_classes)
         y_val_categorical = keras.utils.to_categorical(y_val, num_classes)
         y_test_categorical = keras.utils.to_categorical(y_test, num_classes)
-
         # Resize images to 224x224
         X_train = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_train])
         X_val = np.array([np.array(Image.fromarray(img).resize((224, 224))) for img in X_val])
@@ -319,14 +318,17 @@ def save_trained_model(model, accuracy, precision, recall, f1):
     save_path = "../monorepo/Model/model_registry/"
     timestamp = time.strftime("%Y%m%d%H%M%S")
     model.save(f'{save_path}model_version_{timestamp}.h5')
+    model_name = f'Model/model_registry/model_version_{timestamp}.h5'
+    print(model_name)
     # when the model is initally trained the way we load the model gives 0.0 for all evaluation metrics
     # therefore, we save the evaluation metrics in a json file
     
     evaluation_metrics = {
+        "model": model_name,
         "accuracy": accuracy,
         "precision": precision,
         "recall": recall,
-        "f1_score": f1
+        "f1": f1
     }
 
     metrics_file_path = os.path.join(save_path, 'evaluation_metrics.json')

@@ -5,6 +5,7 @@ import { Button, Paper } from "@mui/material";
 const UserPredict = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [blobForFeedback, setBlobForFeedback] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const fileInputRef = useRef(null);
   const [isPredictionCorrect, setIsPredictionCorrect] = useState(null);
@@ -67,6 +68,8 @@ const UserPredict = () => {
         console.log(response);
         setPrediction(response.data.score);
         setBoundingBox(response.data.box);
+        // Save the blob directly in the state for feedback
+        response.data.blob && setBlobForFeedback(response.data.blob);
       })
       .catch((error) => {
         console.error("Error predicting:", error);
@@ -79,9 +82,10 @@ const UserPredict = () => {
     canvas.height = videoRef.current.videoHeight;
     const context = canvas.getContext("2d");
     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
     canvas.toBlob(async (blob) => {
-      const timestamp = new Date().getTime(); // Get a unique timestamp
-      const fileName = `snapshot_${timestamp}.jpg`; // Use the timestamp in the filename
+      const timestamp = new Date().getTime();
+      const fileName = `snapshot_${timestamp}.jpg`;
       const formData = new FormData();
       formData.append("image", blob, fileName);
 
@@ -97,35 +101,61 @@ const UserPredict = () => {
         );
         console.log(response);
         setPrediction(response.data.score);
+        // Save the blob directly in the state for feedback
+        response.data.blob && setBlobForFeedback(response.data.blob);
       } catch (error) {
         console.error("Error predicting:", error);
       }
-    }, "image/jpg");
+    }, "image/jpeg");
   };
 
   const handleFeedback = () => {
+    let imageForFeedback;
+
     if (isPredictionCorrect !== null) {
       const formData = new FormData();
-      formData.append("image", selectedFile);
-      formData.append("is_correct", isPredictionCorrect);
 
-      if (isPredictionCorrect === "false" && userName.trim() !== "") {
-        formData.append("user_name", userName.trim());
+      if (videoStream) {
+        // Camera scenario
+        canvasRef.current.toBlob((blob) => {
+          formData.append("image", blob);
+          imageForFeedback = blob;
+          formData.append("is_correct", isPredictionCorrect);
+
+          if (isPredictionCorrect === "false" && userName.trim() !== "") {
+            formData.append("user_name", userName.trim());
+          }
+
+          sendFeedback(formData, imageForFeedback);
+        }, "image/jpeg");
+      } else if (selectedFile) {
+        // File scenario
+        formData.append("image", selectedFile);
+        imageForFeedback = selectedFile;
+        formData.append("is_correct", isPredictionCorrect);
+
+        if (isPredictionCorrect === "false" && userName.trim() !== "") {
+          formData.append("user_name", userName.trim());
+        }
+
+        sendFeedback(formData, imageForFeedback);
       }
-
-      axios
-        .post("http://127.0.0.1:8000/feedback", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error("Error submitting feedback:", error);
-        });
     }
+  };
+
+  const sendFeedback = (formData, imageForFeedback) => {
+    axios
+      .post("http://127.0.0.1:8000/feedback", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("Error submitting feedback:", error);
+      });
   };
 
   const triggerFileInput = () => {

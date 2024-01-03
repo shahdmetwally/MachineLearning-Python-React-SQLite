@@ -8,7 +8,9 @@ const UserHistory = () => {
   useEffect(() => {
     const fetchPredictions = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/predictions");
+        const response = await axios.get(
+          process.env.REACT_APP_SERVER_ENDPOINT + "/predictions"
+        );
         setPredictions(response.data);
       } catch (error) {
         console.error("Error while fetching predictions:", error);
