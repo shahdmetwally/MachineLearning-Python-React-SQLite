@@ -6,10 +6,12 @@ from pathlib import Path
 import io
 from sqlalchemy.orm import Session
 import pickle
+import numpy as np
 from keras.preprocessing.image import img_to_array
 from PIL import Image
 import base64
 import os
+import random
 from fastapi import APIRouter
 from .app import app
 
@@ -27,23 +29,18 @@ def save_prediction_to_db(db: Session, score: str, image: bytes):
     db.refresh(db_prediction)
     return db_prediction
 
-
-def save_feedback_to_db(db: Session, name: str, image: str):
+def save_feedback_to_db(db: Session, name: str, image: str, target: int):
     # Read image file
     image_data = image.file.read()
-
-    # Convert the image data to bytes using pickle
-    image_bytes = pickle.dumps(image_data)
-
     # Load and preprocess the image
     img = Image.open(io.BytesIO(image_data))
     img = img.resize((224, 224))
-    img_array = img_to_array(img)
+    img_array = (img_to_array(img) * 255 / 255.0).astype('uint8')
 
     # Convert the preprocessed image data to bytes using pickle
     preprocessed_image_bytes = pickle.dumps(img_array)
 
-    db_feedback = model.Feedback(name=name, image=preprocessed_image_bytes)
+    db_feedback = model.Feedback(target=target, name=name, image=preprocessed_image_bytes)
     db.add(db_feedback)
     db.commit()
     db.refresh(db_feedback)
@@ -117,10 +114,11 @@ def submit_feedback(
             "userName": user_name,
             "is_correct": is_correct,
             "image": image,
+            "target": random.randint(158, 200)
         }
 
         db = model.SessionLocalFeedback()
-        db_feedback = save_feedback_to_db(db, user_name, image)
+        db_feedback = save_feedback_to_db(db, user_name, image, random.randint(158, 500))
         db.close()
 
         return {"message": "Feedback saved successfully"}
