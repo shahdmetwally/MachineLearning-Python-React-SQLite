@@ -70,6 +70,7 @@ SessionLocalFeedback = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine_feedback)
 )
 
+
 class Feedback(Base2):
     __tablename__ = "faces"
 
@@ -77,6 +78,7 @@ class Feedback(Base2):
     name = Column(String)
     image = Column(BLOB, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
 
 # Check if the table exists
 if not inspect(engine_prediction).has_table("faces"):
@@ -210,7 +212,7 @@ def trigger_retraining(datafile_path, threshold=200, **retrain_args):
     df = pd.read_sql_query(query, conn)
     # Close the database connection
     conn.close()
-    
+
     # Set values for X_train and y_train
     y_train = df["target"].values
 
@@ -250,7 +252,7 @@ def retrain(datafile_path):
     df["image"] = df["image"].apply(lambda x: np.array(pickle.loads(x)))
     # Close the database connection
     conn.close()
-    
+
     # Set values for X_train and y_train
     X_train, y_train = df["image"].values, df["target"].values
 
@@ -280,15 +282,19 @@ def retrain(datafile_path):
     # Define functions for individual augmentations
     def apply_rotation(image):
         # Apply rotation to the image
-        imagebyte = (image).astype('uint8')
+        imagebyte = (image).astype("uint8")
         # Apply dynamic rotation to the original image
-        rotation_angle = random.uniform(-15, -5) if random.choice([True, False]) else random.uniform(5, 15)
+        rotation_angle = (
+            random.uniform(-15, -5)
+            if random.choice([True, False])
+            else random.uniform(5, 15)
+        )
         rotated_image = imutils.rotate(imagebyte, angle=rotation_angle)
         return rotated_image
-    
+
     def apply_edge_enhancement(image):
         # Convert the image to uint8 format
-        imagebyte = (image).astype('uint8')
+        imagebyte = (image).astype("uint8")
 
         # Apply Sobel filter for edge enhancement
         sobel_x = cv2.Sobel(imagebyte, cv2.CV_64F, 1, 0, ksize=3)
@@ -298,18 +304,20 @@ def retrain(datafile_path):
         gradient_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
 
         # Ensure the enhanced image is in the range [0, 255]
-        enhanced_image = np.clip((imagebyte + 0.25 * gradient_magnitude), 0, 255).astype(np.uint8)
+        enhanced_image = np.clip(
+            (imagebyte + 0.25 * gradient_magnitude), 0, 255
+        ).astype(np.uint8)
 
         return enhanced_image
-    
+
     def apply_flip(image):
         # Apply horizontal flip to the image
-        imagebyte = (image).astype('uint8')
+        imagebyte = (image).astype("uint8")
         return np.fliplr(imagebyte)
-    
+
     def apply_color_jittering(image):
         # Convert the image to uint8 format
-        imagebyte = (image).astype('uint8')
+        imagebyte = (image).astype("uint8")
 
         # Convert to HSV color space
         hsv_image = cv2.cvtColor(imagebyte, cv2.COLOR_RGB2HSV)
@@ -356,19 +364,23 @@ def retrain(datafile_path):
         # Apply enhancement
         enhanced_image = apply_edge_enhancement(image)
 
-        #Apply color jittering
+        # Apply color jittering
         jittered_image = apply_color_jittering(image)
 
         # Store the augmented images in the dictionary
         if label_key not in augmented_data:
             augmented_data[label_key] = []
 
-        augmented_data[label_key].extend([image, rotated_image, flipped_image, enhanced_image, jittered_image])
+        augmented_data[label_key].extend(
+            [image, rotated_image, flipped_image, enhanced_image, jittered_image]
+        )
 
     # Make sure all arrays contain the same number of samples
     min_samples = min(len(samples) for samples in augmented_data.values())
-    augmented_data = {key: np.array(samples[:min_samples]) for key, samples in augmented_data.items()}      
-    
+    augmented_data = {
+        key: np.array(samples[:min_samples]) for key, samples in augmented_data.items()
+    }
+
     # Initialize lists to store augmented images and labels
     augmented_X_train = []
     augmented_y_train = []
@@ -401,20 +413,20 @@ def retrain(datafile_path):
     augmented_X_train = np.array(augmented_X_train)
     augmented_y_train = np.array(augmented_y_train)
 
-    #Save X_test and y_test to have the X_train and y_train that are not augmented
+    # Save X_test and y_test to have the X_train and y_train that are not augmented
     X_test = np.concatenate([X_train, X_test])
-    y_test =  np.concatenate([y_train, y_test])
+    y_test = np.concatenate([y_train, y_test])
 
-    #Split the new X_test and y_test images 50% for testing data and the validation data
+    # Split the new X_test and y_test images 50% for testing data and the validation data
     X_val, X_test, y_val, y_test = train_test_split(
         X_test, y_test, test_size=0.5, random_state=42
     )
-   
+
     # Unfreeze the layers of old model for retraining
     for layer in old_model.layers:
         layer.trainable = False
 
-    # Get current time as a string to name the layers uniquely 
+    # Get current time as a string to name the layers uniquely
     current_time = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
     # Add a new layers for retraining using the old model layers
@@ -424,15 +436,25 @@ def retrain(datafile_path):
     x = GlobalAveragePooling2D(name="new_pooling_" + current_time)(x)
     x = BatchNormalization(name="new_" + current_time)(x)
     shape = y_train.shape
-    predictions = Dense(shape[1], activation="softmax", name="new_dense_2" + current_time)(x)
+    predictions = Dense(
+        shape[1], activation="softmax", name="new_dense_2" + current_time
+    )(x)
 
     # Create the new model
     new_model = Model(inputs=old_model.input, outputs=predictions)
 
-    new_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    new_model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+    )
 
     # Fit the model with the updated input shape
-    new_model.fit(augmented_X_train, augmented_y_train, epochs=7, batch_size=5, validation_data=(X_val, y_val))
+    new_model.fit(
+        augmented_X_train,
+        augmented_y_train,
+        epochs=7,
+        batch_size=5,
+        validation_data=(X_val, y_val),
+    )
 
     # Save the retrained model
     timestamp = time.strftime("%Y%m%d%H%M%S")
@@ -502,4 +524,5 @@ def retrain(datafile_path):
         f1,
     )
 
-trigger_retraining('./Model/Datasets/retrain_dataset.db')
+
+trigger_retraining("./Model/Datasets/retrain_dataset.db")
