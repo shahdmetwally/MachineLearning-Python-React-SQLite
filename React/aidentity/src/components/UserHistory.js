@@ -26,10 +26,7 @@ const UserHistory = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
         maxWidth: "1000px",
-        margin: "0 auto",
-        marginLeft: "10px",
       }}
     >
       <Paper
