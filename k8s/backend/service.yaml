@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-service
+  name: aidentity-server
 spec:
   selector:
-    app: backend
+    app: aidentity
     service: server
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer

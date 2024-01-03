@@ -6,14 +6,17 @@ from pathlib import Path
 import io
 from sqlalchemy.orm import Session
 import pickle
+import numpy as np
 from keras.preprocessing.image import img_to_array
 from PIL import Image
 import base64
 import os
+import random
 from fastapi import APIRouter
-from app import app 
+from .app import app
 
 router = APIRouter()
+
 
 class PredictionData(BaseModel):
     image: UploadFile
@@ -26,34 +29,34 @@ def save_prediction_to_db(db: Session, score: str, image: bytes):
     db.refresh(db_prediction)
     return db_prediction
 
-def save_feedback_to_db(db: Session, name: str, image: str):
+def save_feedback_to_db(db: Session, name: str, image: str, target: int):
     # Read image file
     image_data = image.file.read()
-
-    # Convert the image data to bytes using pickle
-    image_bytes = pickle.dumps(image_data)
-
     # Load and preprocess the image
     img = Image.open(io.BytesIO(image_data))
     img = img.resize((224, 224))
-    img_array = img_to_array(img)
+    img_array = (img_to_array(img) * 255 / 255.0).astype('uint8')
 
     # Convert the preprocessed image data to bytes using pickle
     preprocessed_image_bytes = pickle.dumps(img_array)
 
-    db_feedback = model.Feedback(name=name, image=preprocessed_image_bytes)
+    db_feedback = model.Feedback(target=target, name=name, image=preprocessed_image_bytes)
     db.add(db_feedback)
     db.commit()
     db.refresh(db_feedback)
     return db_feedback
 
-# user should be able to upload an image which should initiate a prediction 
-@app.post('/predict')
+
+# user should be able to upload an image which should initiate a prediction
+@app.post("/predict")
 def predict(image: UploadFile = File(...)):
     try:
-       # Ensure that the uploaded file is an image
-        if not image.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            raise HTTPException(status_code=400, detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']")
+        # Ensure that the uploaded file is an image
+        if not image.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file format. Supported formats: ['.png', '.jpg', '.jpeg']",
+            )
 
         # Save the uploaded image to a temporary file
         temp_image_path = Path("temp_image.jpg")
@@ -73,13 +76,20 @@ def predict(image: UploadFile = File(...)):
         db_prediction = save_prediction_to_db(db, prediction_result, image_data)
         db.close()
         os.remove(temp_image_path)
-        return JSONResponse(content={"message": "Prediction successful", "score": prediction_result, "box": bounding_box})
+        return JSONResponse(
+            content={
+                "message": "Prediction successful",
+                "score": prediction_result,
+                "box": bounding_box,
+            }
+        )
     except Exception as e:
         # Return other exception details in the response
         return JSONResponse(content={"error": str(e)})
 
+
 # user should be able to view the history of all previously predicitions
-@app.get('/predictions')
+@app.get("/predictions")
 def get_predictions():
     db = model.SessionLocalPrediction()
     predictions = db.query(model.Prediction).all()
@@ -91,22 +101,24 @@ def get_predictions():
 
     return predictions
 
+
 # ask the user for feedback on the prediction's validity in order to use the false predictions for automated retraining
-@app.post('/feedback')
+@app.post("/feedback")
 def submit_feedback(
     image: UploadFile = File(...),
     is_correct: bool = Form(...),
-    user_name: str = Form(''),
+    user_name: str = Form(""),
 ):
     try:
         feedback_entry = {
             "userName": user_name,
             "is_correct": is_correct,
             "image": image,
+            "target": random.randint(158, 200)
         }
 
         db = model.SessionLocalFeedback()
-        db_feedback = save_feedback_to_db(db, user_name, image)
+        db_feedback = save_feedback_to_db(db, user_name, image, random.randint(158, 500))
         db.close()
 
         return {"message": "Feedback saved successfully"}

@@ -95,7 +95,9 @@ const CustomizedSteppers = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/models");
+        const response = await axios.get(
+          process.env.REACT_APP_SERVER_ENDPOINT + "/models"
+        );
         const { active_model: fetchedActiveModel } = response.data;
         setActiveModel(fetchedActiveModel);
       } catch (error) {

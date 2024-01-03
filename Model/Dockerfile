@@ -27,8 +27,8 @@ ENV BACKEND="/" \
 COPY ./requirements.txt /app/requirements.txt
 COPY ./server $BACKEND_HOME/server/
 COPY ./model_registry $BACKEND_MREG
-COPY ./model_v1.py  $BACKEND_HOME
-COPY ./start.sh /app/start.sh
+COPY ./model_pipeline.py  $BACKEND_HOME
+COPY ./Database $BACKEND_HOME/Datasets
 
 WORKDIR /app
 
@@ -37,8 +37,6 @@ RUN pip install --upgrade pip \
 
 WORKDIR $BACKEND
 
-RUN chmod +x /app/start.sh
-
-ENTRYPOINT ["/app/start.sh"]
+CMD ["uvicorn", "Model.server.main:app", "--host", "0.0.0.0", "--port", "80"]
 
 
