@@ -59,7 +59,7 @@ const UserPredict = () => {
     formData.append("image", selectedFile);
 
     axios
-      .post("http://127.0.0.1:8000/predict", formData, {
+      .post(process.env.REACT_APP_SERVER_ENDPOINT + "/predict", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -91,7 +91,7 @@ const UserPredict = () => {
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/predict",
+          process.env.REACT_APP_SERVER_ENDPOINT + "/predict",
           formData,
           {
             headers: {
@@ -145,7 +145,7 @@ const UserPredict = () => {
 
   const sendFeedback = (formData, imageForFeedback) => {
     axios
-      .post("http://127.0.0.1:8000/feedback", formData, {
+      .post(process.env.REACT_APP_SERVER_ENDPOINT + "/feedback", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
