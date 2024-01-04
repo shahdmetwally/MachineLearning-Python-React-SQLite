@@ -1,4 +1,4 @@
-# AiDenity
+# AiDentity
 
 ## Purpose
 
@@ -42,10 +42,10 @@ This section includes everything related to our project planning.
 ![alt text](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/design_management/designs/93/0a95da4f5825f67034460025aadd093e1f34a45b/raw_image)
 
 #### Functional Decomposition Diagram
-![alt text](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/design_management/designs/103/70d68b399fb23cfeef6ce9de2c72ed28dfa605b9/raw_image)
+![alt text](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/design_management/designs/106/792c0f742194435cd00724fd530673e8584b6e6f/raw_image)
 
 #### Component Diagram
-![alt text](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/design_management/designs/99/17210d08df328b1c7b62cba70eda5795afa5c6b5/raw_image)
+![alt text](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/design_management/designs/107/617838b67b72f0b1d96fc0d670098d63773ccc46/raw_image)
 
 ## Authors
 - Shahd Metwally (metwally)
