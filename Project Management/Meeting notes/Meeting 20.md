@@ -15,9 +15,7 @@
 ## Tasks for the next meeting
 - Run the finished application to see if there are any bugs.
 
-
-
-**Next meeting: Thursday 4/1-2024 12:00**
+**Next meeting: Thursday 4/1-2024 13:00**
 
 ## Meeting notes
 - Retraining model
