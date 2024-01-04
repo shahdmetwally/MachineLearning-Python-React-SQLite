@@ -19,6 +19,20 @@ git push -uf origin main
 The system’s functionality will include an algorithm that identifies and recognizes a person's face in front of the camera in real-time through a user-friendly interface. This will be done by creating and training a model based on a facial database in order to be able to identify that what is shown in the camera is a face.
 The users we will have will be normal users and admins. An ordinary user can be someone who’s trying to cross the borders of one country to another for various reasons like tourism. Specifically, this user would get their facial features analysed in order to determine if the person being scanned belongs to the database of national citizens of the country he wishes to enter. Our system can be used in airports or border entry points to inspect if the person entering the country is owing permanent residency to the country or not. If the person being inspected is flagged as not being included in the database of nationals, the system will inform that person that their request for entry has been denied and that they should seek a staff member for further guidance. Additional features are available for users with administrator access to the system, like for example adding new data to possibly train the model on, or update it.
 
+## Model versions
+
+- **model_version_20231222020334.h5:** 
+This h5 file contains the saved weights of the most recent trained VGG16 model.
+
+- **model_version_20231229144933.h5:**
+This h5 file contains the saved weights of a version of a trained EfficientNet model.
+
+- **model_version_20240102024654.h5:**
+This h5 file contains the saved weights of the most recent trained EfficientNet model.
+
+- **model_version_20240102032316.h5:**
+This h5 file contains the saved weights of a retrained version of EfficientNet model. This model version is the highest performing model in our system and its evaluation metrics can be seen in  /Model/model_registry/evaluation_metrics.json.
+
 ## Project Planning
 
 This section includes everything related to our project planning. 
