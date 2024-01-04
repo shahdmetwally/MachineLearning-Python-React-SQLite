@@ -122,14 +122,34 @@ const CustomizedSteppers = () => {
     setActiveStep(0);
   };
 
+  const filterMetricsByType = (metrics, type) =>
+    metrics
+      ? Object.entries(metrics).reduce((filteredMetrics, [key, value]) => {
+          if (key.startsWith(type)) {
+            filteredMetrics[key] = value;
+          }
+          return filteredMetrics;
+        }, {})
+      : {};
+
+  const retrainedMetrics = filterMetricsByType(metrics, "retrained");
+  const oldMetrics = filterMetricsByType(metrics, "old");
+
   return (
     <Stack sx={{ width: "100%", marginTop: "2rem" }} spacing={4}>
-      <Typography
-        variant="h5"
-        sx={{ fontWeight: "bold", textAlign: "center", padding: "1rem" }}
+      <Paper
+        elevation={3}
+        style={{
+          padding: "1rem",
+          margin: "1rem auto",
+          textAlign: "center",
+          width: "50%",
+        }}
       >
-        Current Active Model: {activeModel}
-      </Typography>
+        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          Current Active Model: {activeModel}
+        </Typography>
+      </Paper>
       <Stepper
         alternativeLabel
         activeStep={activeStep}
@@ -137,7 +157,9 @@ const CustomizedSteppers = () => {
       >
         {steps.map((label, index) => (
           <Step key={label}>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+            <StepLabel StepIconComponent={ColorlibStepIcon}>
+              {label}
+            </StepLabel>
           </Step>
         ))}
       </Stepper>
@@ -178,7 +200,52 @@ const CustomizedSteppers = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.entries(metrics).map(([key, value]) => (
+                    {Object.entries(retrainedMetrics).map(([key, value]) => (
+                      <TableRow key={key}>
+                        <TableCell align="left">
+                          {key.replace(/_/g, " ")}
+                        </TableCell>
+                        <TableCell align="right">{value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: "bold", textDecoration: "underline" }}
+            >
+              Old Model Metrics:
+            </Typography>
+            <Paper sx={{ padding: 0, marginBottom: 2, marginTop: 2 }}>
+              <TableContainer>
+                <Table>
+                  <TableHead sx={{ backgroundColor: "#1a353e" }}>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          fontWeight: "bold",
+                          textDecoration: "underline",
+                          color: "white",
+                        }}
+                      >
+                        Metric
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          fontWeight: "bold",
+                          textDecoration: "underline",
+                          color: "white",
+                        }}
+                      >
+                        Value
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(oldMetrics).map(([key, value]) => (
                       <TableRow key={key}>
                         <TableCell align="left">
                           {key.replace(/_/g, " ")}
