@@ -68,6 +68,9 @@ function History() {
                 borderRadius: "8px",
                 overflow: "hidden",
                 width: "30%",
+                paddingRight: "150px",
+                marginBottom: "20px",
+                position: "relative", 
               }}
             >
               <div style={{ height: "70px", width: "70px" }}>
@@ -83,13 +86,40 @@ function History() {
               </div>
               <div
                 style={{
-                  paddingLeft: "40px",
                   paddingTop: "20px",
                   fontSize: "small",
+                  whiteSpace: 'nowrap',
+                  padding: "10px",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginRight: "10px",
+                  marginLeft: "50px",
                 }}
               >
-                <p>Prediction: {prediction.score}</p>
-                <p>Created At: {prediction.created_at}</p>
+              <p> {prediction.score} </p>
+                <div
+                  style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      backgroundColor: prediction.score === "Unknown" ? "red" : "green",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      position: "absolute", 
+                      top: "45%",
+                      transform: "translateY(-50%)",
+                      right: "20px",
+                    }}
+                  >
+                      {prediction.score === "Unknown" ? (
+                        <i className="fas fa-times"></i>
+                      ) : (
+                        <i className="fas fa-check"></i>
+                      )}
+                    </div>
               </div>
             </div>
           ))}
