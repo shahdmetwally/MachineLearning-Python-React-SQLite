@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import '@fortawesome/fontawesome-free/css/all.css';
 import axios from "axios";
 import { Paper } from "@mui/material";
-
+//All done by Dimitrios
 const UserHistory = () => {
   const [predictions, setPredictions] = useState([]);
 

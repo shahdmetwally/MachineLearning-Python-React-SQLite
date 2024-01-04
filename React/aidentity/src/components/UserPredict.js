@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Grid, Button, Card, CardContent, Paper, Dialog, DialogTitle, DialogActions, DialogContent, TextField } from "@mui/material";
 import BadgeIcon from '../static/images/status-icon.png';
-
+//All done by Dimitrios except for code that handles predictions using camera which was done by Shahd
 const UserPredict = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);

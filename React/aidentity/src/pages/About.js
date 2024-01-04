@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Container, Typography, Button, Grid, Paper } from "@mui/material";
 import { useSpring, animated } from "react-spring";
 import Confetti from "react-confetti";
-
+// All done by Sepehr 
 const AboutSection = () => {
   const [isConfettiActive, setConfettiActive] = useState(false);
 

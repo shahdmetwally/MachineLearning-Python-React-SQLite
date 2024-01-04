@@ -39,7 +39,7 @@ import cv2
 import imutils
 import random
 
-# Create database to save all of the model's predictions
+# Create database to save all of the model's predictions (Done by: Shahd)
 DATABASE_URL_PREDICTION = "sqlite:///./Model/Datasets/prediction_history.db"
 Base1 = declarative_base()
 engine_prediction = create_engine(DATABASE_URL_PREDICTION)
@@ -62,7 +62,7 @@ if not inspect(engine_prediction).has_table("predictions"):
     # Create the table if it doesn't exist
     Base1.metadata.create_all(bind=engine_prediction)
 
-# Create database for retraining to save the user's feedback
+# Create database for retraining to save the user's feedback (Done by: Shahd)
 DATABASE_URL_FEEDBACK = "sqlite:///./Model/Datasets/retrain_dataset.db"
 Base2 = declarative_base()
 engine_feedback = create_engine(DATABASE_URL_FEEDBACK)
@@ -85,7 +85,7 @@ if not inspect(engine_prediction).has_table("faces"):
     # Create the table if it doesn't exist
     Base2.metadata.create_all(bind=engine_feedback)
 
-
+# Done by: Jennifer
 def preprocess_image(image):
     detector = MTCNN()
 
@@ -143,7 +143,7 @@ def preprocess_image(image):
 
     return processed_image, bounding_box
 
-
+# Done by: Shahd and Jennifer
 def predict(image_data):
     try:
         # Load the image and resize it to match the model's expected input shape
@@ -200,7 +200,7 @@ def predict(image_data):
         return {"error": str(e)}
 
 
-# If retrain_dataset has 200 targets then initiate retraining (change threshold value if more than 10 makes more sense)
+# If retrain_dataset has 200 targets then initiate retraining (change threshold value if more than 10 makes more sense) --> Done by: Shahd
 def trigger_retraining(datafile_path, threshold=200, **retrain_args):
     # Load and split the retraining dataset
     conn = sqlite3.connect(datafile_path)
@@ -226,6 +226,7 @@ def trigger_retraining(datafile_path, threshold=200, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
+# Done by: Shahd
 def retrain(datafile_path):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
@@ -432,7 +433,7 @@ def retrain(datafile_path):
     # Add a new layers for retraining using the old model layers
     x = old_model.output
     x = Dense(128, activation="relu", name="new_dense_1" + current_time)(x)
-    x = Reshape((1, 1, 128))(x)
+    x = Reshape((1, 1, 128), name="new_resahpe" + current_time)(x)
     x = GlobalAveragePooling2D(name="new_pooling_" + current_time)(x)
     x = BatchNormalization(name="new_" + current_time)(x)
     shape = y_train.shape
