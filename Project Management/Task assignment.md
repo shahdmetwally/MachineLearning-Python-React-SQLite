@@ -73,7 +73,7 @@ Lists tasks addressed in the following meetings:
 |Implement the data augmentation techniques and save it in a folder | None | Sadhana | Yes | No|
 |Implement age progression data augmentation technique  | None | Sadhana | Yes | No|
 |Implement evaluation metrics for the model | None | Sadhana | Yes | No|
-|Set up the django homepage  |[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/14)  | Dimitrios | Yes | Yes|
+|Set up the django homepage  |[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/14)  | Dimitrios | Yes | Yes|
 |Research on facial landmarks | None | Jennifer | Yes | No|
 |Implement facial landmarks and bounding box on images | [Issue #17](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/17) | Jennifer | Yes | No|
 |Getting started with Django | [Issue #12](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/12) | Sepehr | Yes | Yes|
@@ -107,7 +107,7 @@ Lists tasks addressed in the following meetings:
 
 | Tasks  | Links | Member Responsible | Delivered | Integrated |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
-|Model registry| [None](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/16) |Shahd|  Yes | Yes  |
+|Model registry| [Issue #32](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/32) |Shahd|  Yes | Yes  |
 |Prediction history saved in sqlite database| [Issue #22](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/22) |Shahd|  Yes | Yes  |
 |Get user’s uploaded images| [Issue #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/14)<br>[Merge request !31](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/31) |Shahd|  Yes | Yes  |
 |Automated trigger for retraining| [Issue #31](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/31) |Shahd|  No | No  |
@@ -164,7 +164,7 @@ Lists tasks addressed in the following meetings:
 |Add the model file to the repo  | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer | Yes | Yes  |
 |Find the bug that caused the model to not learn and fix it| [Issue #45](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/45) |Jennifer & Sadhana | Yes | Yes  |
 |Change set_active_model() to return active model instead of boolean to display properly on frontend| [Issue #44](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/44) |Shahd | Yes | Yes  |
-|Update FDD| None |Shahd | Yes | Yes  |
+|Update FDD| None |Shahd | Yes | No  |
 |Normalize and resize the user's image correctly| [Issue #41](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/41) |Jennifer | Yes | Yes  |
 |Allows selection of the active model| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !64](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/64) |Sepehr | Yes | Yes  |
 
@@ -176,8 +176,8 @@ Lists tasks addressed in the following meetings:
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 |Implement efficientNet as transfer learning model| [Issue #49](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/49) |Sadhana|  Yes | Yes  |
 |Fixing bugs with server methods| [Issue #46](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/46) |Shahd|  Yes | Yes  |
-|Getting images for history component from prediction_history.db instead of user_images directory| None |Shahd|  Yes | Yes  |
-|Implement model pipeline using sklearn.pipeline library| [Issue #48](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/48) |Shahd|  Yes |   |
+|Getting images for history component from prediction_history.db instead of user_images directory| [Merge request !52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/52) |Shahd|  Yes | Yes  |
+|Implement model pipeline using sklearn.pipeline library| [Issue #48](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/48) |Shahd|  Yes | Yes  |
 |Improve accuracy of efficientNet model and make sure it isn't overfit | None|Sadhana|  Yes | Yes  |
 |Split dataset to save 10% of the data for retraining | [Issue #50](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/50)|Sadhana|  Yes | Yes  |
 |Finalise the combination of techniques to augment and train model on and add the datasets   | None|Sadhana|   |   |
