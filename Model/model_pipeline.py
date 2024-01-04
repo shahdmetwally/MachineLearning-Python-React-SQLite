@@ -22,6 +22,8 @@ import numpy as np
 from numpy import expand_dims
 from keras.models import Model
 
+# All done by: Shahd and uses code from the models.ipynb 
+
 class LoadDataset(BaseEstimator, TransformerMixin):
     def __init__(self, train_database_path):
         self.train_database_path = train_database_path

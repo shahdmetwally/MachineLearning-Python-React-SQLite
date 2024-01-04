@@ -13,7 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import BurstModeIcon from "@mui/icons-material/BurstMode";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Link } from "react-router-dom";
-
+// All done by Sepehr 
 const pages = ["History", "About"];
 const settings = ["Admin"];
 

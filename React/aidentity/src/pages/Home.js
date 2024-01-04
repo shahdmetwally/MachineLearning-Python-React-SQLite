@@ -2,7 +2,7 @@ import React from "react";
 import UserHistory from "../components/UserHistory";
 import UserPredict from "../components/UserPredict";
 import { Grid, Paper } from "@mui/material";
-
+//All done by Dimitrios
 function Home() {
   return (
     <Grid
