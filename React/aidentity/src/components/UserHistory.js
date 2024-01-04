@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import '@fortawesome/fontawesome-free/css/all.css';
 import axios from "axios";
 import { Paper } from "@mui/material";
 
@@ -18,7 +19,7 @@ const UserHistory = () => {
     };
 
     fetchPredictions();
-  }, []); // Empty array ensures useEffect runs only once (on mount)
+  }, []); 
 
   return (
     <div
@@ -31,11 +32,11 @@ const UserHistory = () => {
     >
       <Paper
         elevation={3}
-        style={{ padding: "20px", backgroundColor: "#1A353E", width: "100%" }}
+        style={{ padding: "20px", backgroundColor: "#1A353E", width: "80%" }}
       >
         <h2
           style={{
-            color: "#D9D9D9",
+            color: "white",
             marginBottom: "10px",
             textAlign: "center",
           }}
@@ -61,6 +62,8 @@ const UserHistory = () => {
                     backgroundColor: "white",
                     borderRadius: "8px",
                     overflow: "hidden",
+                    paddingRight: "150px",
+                    position: "relative", 
                   }}
                 >
                   <div style={{ height: "70px", width: "70px" }}>
@@ -74,9 +77,47 @@ const UserHistory = () => {
                       }}
                     />
                   </div>
-                  <div style={{ padding: "10px", fontSize: "small" }}>
-                    <p>Prediction: {prediction.score}</p>
-                    <p>Created At: {prediction.created_at}</p>
+                  <div
+                    style={{
+                      marginLeft: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "10px",
+                        fontSize: "small",
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginRight: "10px",
+                      }}
+                    >
+                      <p style={{ whiteSpace: 'nowrap', paddingRight: "10px" }}>
+                        {prediction.score}
+                      </p>
+                      <div
+                      style={{
+                        margin: "135px",
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        backgroundColor: prediction.score === "Unknown" ? "red" : "green",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        position: "absolute", 
+                      }}
+                    >
+                      {prediction.score === "Unknown" ? (
+                        <i className="fas fa-times"></i>
+                      ) : (
+                        <i className="fas fa-check"></i>
+                      )}
+                    </div>
+                    </div>                  
                   </div>
                 </div>
               </li>

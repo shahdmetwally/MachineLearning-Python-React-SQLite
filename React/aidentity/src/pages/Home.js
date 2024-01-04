@@ -7,11 +7,13 @@ function Home() {
   return (
     <Grid
       container
+      spacing={3}
       style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         height: "90vh",
+        position: "absolute"
       }}
     >
       <Grid item>

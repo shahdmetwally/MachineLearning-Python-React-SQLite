@@ -13,7 +13,7 @@ const Banner = () => {
     <Snackbar
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       open={open}
-      message="This website may gain consciousness and we're not liable for mischievous behaviour."
+      message="Our application will save your images and use them to improve."
       action={
         <Button color="inherit" size="small" onClick={handleAccept}>
           I Understand

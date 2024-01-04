@@ -107,8 +107,9 @@ const AboutSection = () => {
                   <Typography variant="h4" gutterBottom>
                     The Internals
                   </Typography>
-                  It's way too complicated to briefly describe here, ask
-                  ChatGPT.
+                  Our AI uses a transfer learned model to identify your images. 
+                  When you upload an image it will be stored and used for improving our model. 
+                  It is important to disclose that some inaccuracies with the model's  identification of peoples might occur.
                   <Typography variant="body1"></Typography>
                 </Paper>
               </animated.div>
