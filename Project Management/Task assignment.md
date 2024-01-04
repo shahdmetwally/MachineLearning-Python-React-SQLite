@@ -25,8 +25,7 @@ Lists tasks addressed in the following meetings:
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 |Research feasability of music recommendation idea| [Meeting 5](./Meeting%20notes/Meeting%205.md) |Sadhana, Shahd & Sepehr|  Yes | Yes  |
 |Research feasibility of facial recognition idea| [Meeting 5](./Meeting%20notes/Meeting%205.md) |Jennifer & Dimitrios| Yes  | Yes  |
-|  Write section 1 of report  | None | Dimitrios | Yes  | Yes  |
-|  Write section 2 of report  | None| Jennifer | Yes  | Yes  |
+|  Write report  | None | Dimitrios & Jennifer | Yes  | Yes  |
 
 ## **Milestone:** Project Planning
 
@@ -47,7 +46,7 @@ Lists tasks addressed in the following meetings:
 |Research different approaches to training our model | None |Jennifer & Sadhana | Yes | No|
 |Set up the repo| [Issue #12](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/12)|
 |Research on how  to load LFW dataset in our SQLite database|[Issue #10](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/10)| Shahd | Yes | Yes|
-|Add Gitlab project planning / milestones + fill in appendices tables| [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)| All members| Yes | Yes
+|Add Gitlab project planning / milestones + fill in appendices tables| [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)| Sadhana| Yes | Yes
 |Finish assignment 1| [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)|All members|Yes|Yes|
 
 ## **Milestone:** Project Execution
@@ -63,6 +62,8 @@ Lists tasks addressed in the following meetings:
 |Researching approaches to save the trained model| [Merge request !9](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/9)| Shahd | Yes | Yes|
 |Connecting the model with the backend | [Issue #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/14)| Shahd| Yes | Yes|
 |Creating and modifying the SQLite database| [Issue #10](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/10)| Shahd & Jennifer| Yes| Yes|
+|Set up initial readme structure| [Issue #11](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/11)| Dimitrios| Yes| Yes|
+|Attempted to create pages on Django|None| Dimitrios| Yes| No|
 |Create FDD| [Issue #8](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/8)| All members | Yes | Yes|
 |Create preprocessing methods for the images in the dataset| [Issue #13](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/13)| Jennifer | Yes | Yes|
 |Create the CNN model| [Issue #13](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/13) | Jennifer | Yes | Yes |
@@ -72,8 +73,12 @@ Lists tasks addressed in the following meetings:
 |Implement the data augmentation techniques and save it in a folder | None | Sadhana | Yes | No|
 |Implement age progression data augmentation technique  | None | Sadhana | Yes | No|
 |Implement evaluation metrics for the model | None | Sadhana | Yes | No|
+|Set up the django homepage  |[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/14)  | Dimitrios | Yes | Yes|
 |Research on facial landmarks | None | Jennifer | Yes | No|
 |Implement facial landmarks and bounding box on images | [Issue #17](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/17) | Jennifer | Yes | No|
+|Getting started with Django | [Issue #12](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/12) | Sepehr | Yes | Yes|
+|Pipenv / Pipfile | [Issue #15](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/15) | Sepehr | Yes | Yes|
+|More templates for Django project | [Issue #15](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/15) | Sepehr | Yes | Yes|
 
 ### Week 5 27/11-3/12
 Lists tasks addressed in the following meetings:
@@ -88,6 +93,11 @@ Lists tasks addressed in the following meetings:
 |Test and push the feature map visualisation| [Issue #20](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/20) |Jennifer|  Yes | Yes  |
 |Load the dataset into pandas dataframe|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Jennifer| Yes| Yes|
 |Show the name instead of label when making predictions|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Jennifer| Yes| Yes|
+|New Views, Updates Templates, CSS|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Sepehr| Yes| Yes|
+|Adding necessary packages to pipfile|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/19)| Sepehr| Yes| Yes|
+|Addition of Forms, Applied migrations and set up Admin, Started Model integration, and Django models|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Sepehr| Yes| Yes|
+|Enabled user interaction with the model, updates & additions including, new migrations, updated templates, enhanced home view, updated django models, forms, css, & folder structure|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !74](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/74)| Sepehr| Yes| Yes|
+|Preview Image before uploading|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !74](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/74)| Sepehr| Yes| Yes|
 
 ### Week 6 4/12-10/12
 Lists tasks addressed in the following meetings:
@@ -102,13 +112,19 @@ Lists tasks addressed in the following meetings:
 |Get user’s uploaded images| [Issue #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/14)<br>[Merge request !31](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/31) |Shahd|  Yes | Yes  |
 |Automated trigger for retraining| [Issue #31](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/31) |Shahd|  No | No  |
 |Ability to rollback to different versions of the model| [Issue #32](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/32) |Shahd|  Yes | Yes  |
+|Set up React in the repository| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !29](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/29) |Dimitrios|  Yes | Yes  |
+|Change appearance of buttons and make images show up in the frontend| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !36](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/36) |Dimitrios|  Yes | Yes  |
+|Improve general appearance of the homepage| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !36](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/36) |Dimitrios|  Yes | Yes  |
 |Find the right size of augmented dataset to tackle overfitting of the model| None |Sadhana|  Yes | Yes  |
 |Find a way to ensure age progression can be applied to uncropped images while the rest of the techniques are applied on cropped images| None |Sadhana|  Yes | Yes  |
 |Check if any faces were detected on the input image before processing it| [Issue #30](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/30) |Jennifer|  Yes | Yes  |
 |Display prediction only if the model’s confidence is high enough| [Issue #30](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/30) |Jennifer|  Yes | No |
 |Try different regularization techniques to overcome overfitting| [Issue #35](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/35) |Jennifer|  Yes | No |
 |Update component diagram| None |Shahd|  Yes | No |
+|Fix structure of the FDD| None |Dimitrios|  Yes | No |
 |Plot graphs for model accuracy and loss to monitor overfitting| None |Jennifer|  Yes | Yes |
+|Adds Router, Navbar, Pages + requirements.txt for faster package installation and deployment| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !33](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/33) |Sepehr|  Yes | Yes |
+|New admin page allows admin to retrain and view models, new components, etc| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/37) |Sepehr|  Yes | Yes |
 |Preparation for fair | None |All members|  Yes | Yes |
 |Restructured the repo | [Issue #27](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/27) |All members|  Yes | Yes |
 
@@ -129,6 +145,8 @@ Lists tasks addressed in the following meetings:
 |Normalize images using VGG16’s preprocess_input method | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer|  Yes | Yes  |
 |Resize images to the correct input shape (224x224) | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer|  Yes | Yes  |
 |Regularize the model | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer|  Yes | Yes  |
+|Renders available models in MUI Tables | [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/37) |Sepehr|  Yes | Yes  |
+|Progress bar for model retraining | [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/37) |Sepehr|  Yes | Yes  |
 
 ### Week 8 18/12-24/12
 Lists tasks addressed in the following meetings:
@@ -138,6 +156,9 @@ Lists tasks addressed in the following meetings:
 | Tasks  | Links | Member Responsible | Delivered | Integrated |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 |Moved our repo to github to commit large files | None |All members| Yes | No  |
+|Created frontend component for showing the history of predictions | [Issue #42](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/42)<br>[Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !46](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/46) |Dimitrios| Yes | Yes  |
+|Made the history section scrollable and resize images | [Issue #42](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/42)<br>[Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !46](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/46) |Dimitrios| Yes | Yes  |
+|Save prediction validity feedback in the SQL database | [Issue #38](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/38) |Dimitrios| Yes | Yes  |
 |Live camera feature | [Issue #38](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/38) |Shahd| Yes | Yes  |
 |Add the augmented and split dataset to the repo  | [Issue #39](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/39) |Sadhana | Yes | Yes  |
 |Add the model file to the repo  | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer | Yes | Yes  |
@@ -145,12 +166,11 @@ Lists tasks addressed in the following meetings:
 |Change set_active_model() to return active model instead of boolean to display properly on frontend| [Issue #44](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/44) |Shahd | Yes | Yes  |
 |Update FDD| None |Shahd | Yes | Yes  |
 |Normalize and resize the user's image correctly| [Issue #41](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/41) |Jennifer | Yes | Yes  |
-
+|Allows selection of the active model| [Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !64](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/64) |Sepehr | Yes | Yes  |
 
 ### Week 9 25/12-31/12
 Lists tasks addressed in the following meetings:
 - [Meeting 19](./Meeting%20notes/Meeting%2019.md)
-- [Meeting 20](Add link)
 
 | Tasks  | Links | Member Responsible | Delivered | Integrated |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -164,5 +184,8 @@ Lists tasks addressed in the following meetings:
 |Account for two faces in an image| [Issue #51](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/51)|Jennifer|  Yes | Yes  |
 |Draw a bounding box around the face on the user’s uploaded image | [Issue #51](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/51)|Jennifer|  Yes | Yes  |
 |Redesign the history of predictions component  | [Issue #53](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/53)|Jennifer|  Yes | Yes  |
+|Created test for loading the dataset  | Pending|Dimitrios|  Yes | Yes  |
+|Created tests for the three pipeline versions  | Pending|Dimitrios|  Yes | Yes  |
+|Created test for validating the predictions  | Pending|Dimitrios|  Yes | Yes  |
 
 ## **Milestone:** Project Closing
