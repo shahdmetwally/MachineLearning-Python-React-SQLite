@@ -96,7 +96,7 @@ Lists tasks addressed in the following meetings:
 |New Views, Updates Templates, CSS|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Sepehr| Yes| Yes|
 |Adding necessary packages to pipfile|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/19)| Sepehr| Yes| Yes|
 |Addition of Forms, Applied migrations and set up Admin, Started Model integration, and Django models|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Sepehr| Yes| Yes|
-|Enabled user interaction with the model, updates & additions including, new migrations, updated templates, enhanced home view, updated django models, forms, css, & folder structure|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !74](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/74)| Sepehr| Yes| Yes|
+|Enabled user interaction with the model + updates & additions including, new migrations, updated templates, enhanced home view, updated django models, forms, css, & folder structure|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !74](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/74)| Sepehr| Yes| Yes|
 |Preview Image before uploading|[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !74](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/74)| Sepehr| Yes| Yes|
 
 ### Week 6 4/12-10/12
@@ -187,5 +187,43 @@ Lists tasks addressed in the following meetings:
 |Created test for loading the dataset  | Pending|Dimitrios|  Yes | Yes  |
 |Created tests for the three pipeline versions  | Pending|Dimitrios|  Yes | Yes  |
 |Created test for validating the predictions  | Pending|Dimitrios|  Yes | Yes  |
+|Split retrain data into train, validation, and test sets.| [Issue #54](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/54)<br> [Merge request !60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/60)|Shahd|  Yes | Yes  |
+|Create a common port and FastAPI app for both the admin and the user routers|  [Issue #59](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/59)|Shahd|  Yes | Yes  |
+|Save the retrained model's evaluation metrics to the evaluation_metrics.json file if the retrained model performance is better than the latest model.|  [Issue #54](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/54)<br> [Merge request !60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/60)|Shahd|  Yes | Yes  |
+|Finalise the combination of techniques to augment and and the size of dataset|  [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
+|Finalise data related details| [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
+|Fixes prediction_history.db|Pending|Shahd|  Yes | Yes  |
+|Update modelv3 based on the new dataset size and make sure to find optimum efficiency|Pending|Sadhana|  Yes | Yes  |
+|Fix the visualisation of feature maps on the final model|None|Jennifer|  Yes | No  |
+|Improve retraining performance|Pending|Shahd & Sadhana|  Yes | Yes  |
+|Fixed persistence issue with setting active model|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Containerized Frontend and Backend using docker|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Resolved dependency issues with requirements.txt|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Resolved ‘table predictions already exists’|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Start script to run two different fastapi apps, user and admin at the same time in the docker container|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|View current model in Retrain page|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Added .yaml files for k8s - deployment, service for both backend and frontend, and ingress.|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Fixed file path issue in the backend causing failing docker build.|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Fixed database being inaccessible in docker container|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Fixed k8s error, livenessProbe error causing the backend pod to fail.|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Endpoint in backend returning ‘200 status code’ for livenessProbe|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Solved CORS error on frontend pod.|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|Updated ports in docker files and k8s .yaml files.|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
+|.env file to facilitate dynamic endpoint routing|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
 
 ## **Milestone:** Project Closing
+
+### Week 10 01/01-05/01
+Lists tasks addressed in the following meetings:
+- [Meeting 20](./Meeting%20notes/Meeting%2020.md)
+- [Meeting 21](./Meeting%20notes/Meeting%2021.md)
+
+| Tasks  | Links | Member Responsible | Delivered | Integrated |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+|Fully Functioning Deployed application on Google Cloud Platform|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47) |Sepehr|  Yes | Yes  |
+|History page, About page, disclaimer banner, responsiveness|[Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !73](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/73) |Sepehr|  Yes | Yes  |
+|Update readme|[Issue #65](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/65) |Jennifer |  Yes | Yes  |
+|Add all meetings notes on repo |[Issue #55](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/55) |Jennifer |  Yes | Yes  |
+|Finalising automatic trigger for retraining |[Issue #62](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/62) |Shahd |  Yes | Yes  |
+|Made general improvements to the UI |Pending |Dimitrios |  Yes | Yes  |
+|Finalise the report  |None |All members |  Yes | Yes  |
