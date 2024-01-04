@@ -1,10 +1,10 @@
-# AiDentity
+# ![alt text](./React/aidentity/public/shield.png) AiDentity
 
 ## Purpose
 
-This project's purpose is to make it quick and easy for travelers to get their identity verified using facial recognition.The goal of the system is to be able to detect and identify individuals accurately based on their facial features and structure.
+Implementing facial recognition technology can enhance security and surveillance by providing a robust and efficient means of identifying individuals in various settings. This technology allows for quick and accurate identification of persons of interest or unauthorised individuals. The goal of the system is to be able to detect and identify individuals accurately based on their facial features and structure.
 
-This concept addresses possible border control scenarios' purpose being to assist in locations with resource limitations or understaffed and remote locations that would benefit from an automated system. Other cases that would benefit from the use of such a system would be at airports with high passenger volumes.
+This concept addresses possible border control scenarios with its purpose being to assist in remote locations with resource limitations that would benefit from an automated system. Other cases that would benefit from the use of such a system would be at airports with high passenger volumes
 
 ## Installation Guide
 (Placeholder)
@@ -16,8 +16,9 @@ git push -uf origin main
 ```
 
 ## Description
-The system’s functionality will include an algorithm that identifies and recognizes a person's face in front of the camera in real-time through a user-friendly interface. This will be done by creating and training a model based on a facial database in order to be able to identify that what is shown in the camera is a face.
-The users we will have will be normal users and admins. An ordinary user can be someone who’s trying to cross the borders of one country to another for various reasons like tourism. Specifically, this user would get their facial features analysed in order to determine if the person being scanned belongs to the database of national citizens of the country he wishes to enter. Our system can be used in airports or border entry points to inspect if the person entering the country is owing permanent residency to the country or not. If the person being inspected is flagged as not being included in the database of nationals, the system will inform that person that their request for entry has been denied and that they should seek a staff member for further guidance. Additional features are available for users with administrator access to the system, like for example adding new data to possibly train the model on, or update it.
+The system’s functionality include an algorithm that identifies and recognizes a person's face in front of the camera in real-time through a user-friendly interface. This is done by creating and training a model based on a facial database in order to be able to identify that what is shown in the camera is a face.
+
+The users would be airport security or border control personnel. The admins will be part of the developers. An example on who the program can be used on would be a person who's trying to cross the borders of one country to another for various reasons like tourism. Specifically, this said person would get their facial features analysed in order to determine if the person being scanned belongs to the database of national citizens of the country he wishes to enter. Our system can be used in airports or border entry points by the staff to inspect if any person entering the country is owing permanent residency to the country or not. If the person being inspected is flagged as not being included in the database of nationals, the system will inform the user that the person’s request for entry has been denied. Additional features are available for users with administrator access to the system. These features include: adding new data for the model to retrain on, viewing the previous models, and rolling back to different model versions if needed.
 
 ## Model versions
 
