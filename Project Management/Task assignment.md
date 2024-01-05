@@ -200,7 +200,7 @@ Lists tasks addressed in the following meetings:
 |Fixes prediction_history.db| [Issue #56](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/56)<br> [Merge request !61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/61)|Shahd|  Yes | Yes  |
 |Update modelv3 based on the new dataset size and make sure to find optimum efficiency|Pending|Sadhana|  Yes | Yes  |
 |Fix the visualisation of feature maps on the final model|None|Jennifer|  Yes | No  |
-|Improve retraining performance| [Issue #60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/60)<br> [Merge request !70](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)|Shahd & Sadhana|  Yes | Yes  |
+|Improve retraining performance| [Issue #60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/60)<br> [Merge request !70](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)<br> [Merge request !71](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)|Shahd & Sadhana|  Yes | Yes  |
 |Fixed persistence issue with setting active model|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
 |Containerized Frontend and Backend using docker|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
 |Resolved dependency issues with requirements.txt|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
