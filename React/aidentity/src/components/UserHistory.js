@@ -3,6 +3,7 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import axios from "axios";
 import { Paper } from "@mui/material";
 //All done by Dimitrios
+//Part of the design for the prediction history was done by Jennifer
 const UserHistory = () => {
   const [predictions, setPredictions] = useState([]);
 
