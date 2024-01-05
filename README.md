@@ -6,13 +6,64 @@ Implementing facial recognition technology can enhance security and surveillance
 
 This concept addresses possible border control scenarios with its purpose being to assist in remote locations with resource limitations that would benefit from an automated system. Other cases that would benefit from the use of such a system would be at airports with high passenger volumes
 
-## Installation Guide
-(Placeholder)
+## User Guide
+
+Note: The system assumes that you have Python 3.11.5 installed
+
 ```
-cd existing_repo
-git remote add origin https://git.chalmers.se/courses/dit826/2023/group3/monorepo.git
-git branch -M main
-git push -uf origin main
+# Clone repository
+git clone git@git.chalmers.se:courses/dit826/2023/group3/monorepo.git
+```
+### Option 1 - Using Docker
+
+For installation of Docker please refer to: [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
+
+#### Terminal 1
+
+```
+cd Model
+dockerfile build -t backend .
+docker run -p 8080:8080 backend
+```
+#### Terminal 2
+
+```
+cd React
+cd aidentity
+dockerfile build -t frontend .
+docker run -p 3000:3000 frontend
+```
+
+### Option 2
+#### Terminal 1
+
+```
+# Navigate to target folder
+cd Model
+```
+```
+# Install necessary packages
+pip install -r requirements.txt
+```
+```
+# Run the backend
+uvicorn Model.server.main:app --host 0.0.0.0 --port 8000
+```
+#### Terminal 2
+```
+# Navigate to target folder
+cd React
+cd aidentity
+```
+```
+# Install necessary packages
+npm install
+npm install react-spring
+npm install react-confetti
+```
+```
+# Run the frontend
+npm start
 ```
 
 ## Description
