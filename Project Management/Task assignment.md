@@ -198,7 +198,7 @@ Lists tasks addressed in the following meetings:
 |Finalise the combination of techniques to augment and and the size of dataset|  [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
 |Finalise data related details| [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
 |Fixes prediction_history.db| [Issue #56](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/56)<br> [Merge request !61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/61)|Shahd|  Yes | Yes  |
-|Update modelv3 based on the new dataset size and make sure to find optimum efficiency|Pending|Sadhana|  Yes | Yes  |
+|Update modelv3 based on the new dataset size and make sure to find optimum efficiency|None|Sadhana|  Yes | Yes  |
 |Fix the visualisation of feature maps on the final model|None|Jennifer|  Yes | No  |
 |Improve retraining performance| [Issue #60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/60)<br> [Merge request !70](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)<br> [Merge request !71](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)|Shahd & Sadhana|  Yes | Yes  |
 |Fixed persistence issue with setting active model|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
@@ -229,6 +229,7 @@ Lists tasks addressed in the following meetings:
 |Fully Functioning Deployed application on Google Cloud Platform|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47) |Sepehr|  Yes | Yes  |
 |History page, About page, disclaimer banner, responsiveness|[Issue #26](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/26)<br> [Merge request !73](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/73) |Sepehr|  Yes | Yes  |
 |Update readme|[Issue #65](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/65) |Jennifer |  Yes | Yes  |
+|Cleaning up repository |[Issue #60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/60)<br> [Merge request !71](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/71) |Sadhana |  Yes | Yes  |
 |Add all meetings notes on repo |[Issue #55](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/55) |Jennifer |  Yes | Yes  |
 |Finalising automatic trigger for retraining |[Issue #62](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/62) |Shahd |  Yes | Yes  |
 |Made general improvements to the UI |[Issue #63](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/63)<br> [Merge request !77](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/77) |Dimitrios |  Yes | Yes  |
