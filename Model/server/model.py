@@ -226,7 +226,7 @@ def trigger_retraining(datafile_path, threshold=200, **retrain_args):
         print(f"Not enough entries ({num_entries}) to trigger retraining.")
 
 
-# Done by: Shahd
+# Done by: Shahd --> Data augmentation part done by Sadhana
 def retrain(datafile_path):
     # Load the latest model
     latest_model = model_registry.get_latest_model_version()
