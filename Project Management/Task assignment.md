@@ -184,18 +184,18 @@ Lists tasks addressed in the following meetings:
 |Account for two faces in an image| [Issue #51](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/51)|Jennifer|  Yes | Yes  |
 |Draw a bounding box around the face on the user’s uploaded image | [Issue #51](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/51)|Jennifer|  Yes | Yes  |
 |Redesign the history of predictions component  | [Issue #53](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/53)|Jennifer|  Yes | Yes  |
-|Created test for loading the dataset  | Pending|Dimitrios|  Yes | Yes  |
-|Created tests for the three pipeline versions  | Pending|Dimitrios|  Yes | Yes  |
-|Created test for validating the predictions  | Pending|Dimitrios|  Yes | Yes  |
+|Created test for loading the dataset  |  [Issue #61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/61)<br> [Merge request !76](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/76)|Dimitrios|  Yes | Yes  |
+|Created tests for the three pipeline versions  | [Issue #61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/61)<br> [Merge request !76](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/76)|Dimitrios|  Yes | Yes  |
+|Created test for validating the predictions  | [Issue #61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/61)<br> [Merge request !76](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/76)|Dimitrios|  Yes | Yes  |
 |Split retrain data into train, validation, and test sets.| [Issue #54](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/54)<br> [Merge request !60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/60)|Shahd|  Yes | Yes  |
 |Create a common port and FastAPI app for both the admin and the user routers|  [Issue #59](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/59)|Shahd|  Yes | Yes  |
 |Save the retrained model's evaluation metrics to the evaluation_metrics.json file if the retrained model performance is better than the latest model.|  [Issue #54](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/54)<br> [Merge request !60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/60)|Shahd|  Yes | Yes  |
 |Finalise the combination of techniques to augment and and the size of dataset|  [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
 |Finalise data related details| [Issue #52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/52)|Sadhana|  Yes | Yes  |
-|Fixes prediction_history.db|Pending|Shahd|  Yes | Yes  |
+|Fixes prediction_history.db| [Issue #56](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/56)<br> [Merge request !61](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/61)|Shahd|  Yes | Yes  |
 |Update modelv3 based on the new dataset size and make sure to find optimum efficiency|Pending|Sadhana|  Yes | Yes  |
 |Fix the visualisation of feature maps on the final model|None|Jennifer|  Yes | No  |
-|Improve retraining performance|Pending|Shahd & Sadhana|  Yes | Yes  |
+|Improve retraining performance| [Issue #60](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/60)<br> [Merge request !70](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/70)|Shahd & Sadhana|  Yes | Yes  |
 |Fixed persistence issue with setting active model|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
 |Containerized Frontend and Backend using docker|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
 |Resolved dependency issues with requirements.txt|[Issue #47](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/47)|Sepehr|  Yes | Yes  |
@@ -225,5 +225,5 @@ Lists tasks addressed in the following meetings:
 |Update readme|[Issue #65](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/65) |Jennifer |  Yes | Yes  |
 |Add all meetings notes on repo |[Issue #55](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/55) |Jennifer |  Yes | Yes  |
 |Finalising automatic trigger for retraining |[Issue #62](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/62) |Shahd |  Yes | Yes  |
-|Made general improvements to the UI |Pending |Dimitrios |  Yes | Yes  |
+|Made general improvements to the UI |[Issue #63](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/63)<br> [Merge request !77](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/77) |Dimitrios |  Yes | Yes  |
 |Finalise the report  |None |All members |  Yes | Yes  |
