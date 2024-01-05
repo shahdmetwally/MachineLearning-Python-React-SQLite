@@ -42,9 +42,10 @@ Lists tasks addressed in the following meetings:
 |Create a prototype of UI | [Issue #6](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/6)| Dimitrios & Sepehr | Yes  | Yes  |
 |Research django & how to use it  | None| Dimitrios & Sepehr | Yes  | Yes  |
 |Create component diagram | [Issue #7](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/7)| Shahd | Yes  | Yes  |
-|Toy model & initial data file | [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)<br>[Merge request !1](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/1)| Jennifer & Sadhana | Yes | Yes|
-|Research different approaches to training our model | None |Jennifer & Sadhana | Yes | No|
-|Set up the repo| [Issue #12](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/12)|
+|CNN Toy model & initial data file | [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)<br>[Merge request !1](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/1)| Jennifer | Yes | Yes|
+|Eigenfaces Toy model|None| Jennifer | Yes | Yes|
+|Research different approaches to training our model | None |Sadhana | Yes | No|
+|Set up the repo| [Issue #12](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/12)| Sepehr | Yes | Yes|
 |Research on how  to load LFW dataset in our SQLite database|[Issue #10](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/10)| Shahd | Yes | Yes|
 |Add Gitlab project planning / milestones + fill in appendices tables| [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)| Sadhana| Yes | Yes
 |Finish assignment 1| [Issue #5](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/5)|All members|Yes|Yes|
@@ -71,6 +72,7 @@ Lists tasks addressed in the following meetings:
 |Research transfer learning|  None | Jennifer | Yes | No|
 |Research Data Augmentation techniques | None | Sadhana | Yes | Yes|
 |Implement the data augmentation techniques and save it in a folder | None | Sadhana | Yes | No|
+|Implement age progression test images to make sure age progression works | None | Sadhana | Yes | No|
 |Implement age progression data augmentation technique  | None | Sadhana | Yes | No|
 |Implement evaluation metrics for the model | None | Sadhana | Yes | No|
 |Set up the django homepage  |[Issue #18](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/18)<br> [Merge request !14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/14)  | Dimitrios | Yes | Yes|
@@ -90,6 +92,7 @@ Lists tasks addressed in the following meetings:
 |Find the right number of augmented images needed for higher accuracy| [Issue #16](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/16) |Sadhana|  Yes | Yes  |
 |Save the augmented images in a dataset and merge the final for data augmentation| [Issue #16](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/16) |Sadhana|  Yes | Yes  |
 |Implement transfer learning technique on the model| [Issue #14](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/14) |Jennifer|  Yes | Yes  |
+|Integrate evaluation metrics| [Issue #23](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/23) |Sadhana |  Yes | Yes  |
 |Test and push the feature map visualisation| [Issue #20](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/20) |Jennifer|  Yes | Yes  |
 |Load the dataset into pandas dataframe|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Jennifer| Yes| Yes|
 |Show the name instead of label when making predictions|[Issue #19](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/19)| Jennifer| Yes| Yes|
@@ -140,6 +143,7 @@ Lists tasks addressed in the following meetings:
 |Give feedback for group 1, 5, 7 project presentation | None |All members|  Yes | Yes  |
 |Implement age progression data augmentation technique | [Issue #36](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/36) |Sadhana|  Yes | Yes  |
 |Split the dataset into training, validation, test and only augment training data | [Issue #36](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/36) |Sadhana|  Yes | Yes  |
+|Create load dataset that loads already split data for the model to train on |[Issue #39](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/39) <br> [Merge request !43](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/43) |Sadhana|  Yes | Yes  |
 |Research EfficientNet and compare it with VGG16 | [Issue #49](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/49) |Sadhana|  Yes | Yes  |
 |Split the dataset into three different sets | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer|  Yes | Yes  |
 |Normalize images using VGG16’s preprocess_input method | [Issue #37](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/37) |Jennifer|  Yes | Yes  |
@@ -178,7 +182,8 @@ Lists tasks addressed in the following meetings:
 |Fixing bugs with server methods| [Issue #46](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/46) |Shahd|  Yes | Yes  |
 |Getting images for history component from prediction_history.db instead of user_images directory| [Merge request !52](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/merge_requests/52) |Shahd|  Yes | Yes  |
 |Implement model pipeline using sklearn.pipeline library| [Issue #48](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/48) |Shahd|  Yes | Yes  |
-|Improve accuracy of efficientNet model and make sure it isn't overfit | None|Sadhana|  Yes | Yes  |
+|Through trial and error, improve accuracy of efficientNet model and make sure it isn't overfit  | None|Sadhana|  Yes | Yes  |
+|Find the optimum dataset size, by analyzing the trade off between number of targets and accuracy of the efficientNet model  | None|Sadhana|  Yes | Yes  |
 |Split dataset to save 10% of the data for retraining | [Issue #50](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/50)|Sadhana|  Yes | Yes  |
 |Finalise the combination of techniques to augment and train model on and add the datasets   | None|Sadhana|   |   |
 |Account for two faces in an image| [Issue #51](https://git.chalmers.se/courses/dit826/2023/group3/monorepo/-/issues/51)|Jennifer|  Yes | Yes  |
@@ -217,6 +222,7 @@ Lists tasks addressed in the following meetings:
 Lists tasks addressed in the following meetings:
 - [Meeting 20](./Meeting%20notes/Meeting%2020.md)
 - [Meeting 21](./Meeting%20notes/Meeting%2021.md)
+- [Meeting 22](./Meeting%20notes/Meeting%2022.md)
 
 | Tasks  | Links | Member Responsible | Delivered | Integrated |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
